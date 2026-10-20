@@ -1,0 +1,10 @@
+# 原始素材（体积大，不上传，可用 .export.py 重新生成 photos/）
+照片素材/
+
+# WorkBuddy 项目配置
+.workbuddy/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini

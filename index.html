@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aric Elliot</title>
+<meta name="theme-color" content="#e7e5de">
+<meta name="description" content="A quiet photographic index.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23e7e5de'/%3E%3Cpath d='M16 9v14M9 16h14' stroke='%23252726' stroke-width='1.2'/%3E%3C/svg%3E">
+<style>
+/* ------------------------------------------------------------------ base */
+:root{
+  --bg: #e7e5de;
+  --ink: #252726;
+  --ink-2: rgba(37,39,38,.56);
+  --ink-3: rgba(37,39,38,.32);
+  --hair: rgba(37,39,38,.14);
+
+  --grid: 1.6667vw;
+  --pad: 1.6667vw;
+
+  --cell: clamp(62px, 6.67vw, 150px);
+  --cstep: calc(var(--cell) * 1.875);
+  --fs-title: clamp(45px, 4.6875vw, 90px);
+  /* rows shrink just enough to leave the category name its own space */
+  --rstep: min(calc(var(--cell) * 1.68), calc((100vh - var(--fs-title) * 1.5 - 54px) / 5));
+  --secgap: calc((var(--cstep) - var(--cell)) * 1.55);
+
+  --colw: 19.9vw;
+  --rowh: 13.4vh;
+
+  --ease-link: cubic-bezier(.65,0,.35,1);
+  --ease-out: cubic-bezier(.22,.61,.16,1);
+  --ease-soft: cubic-bezier(.33,.05,.2,1);
+}
+
+*{ box-sizing: border-box; }
+
+html{ height: 100%; overflow-x: hidden; }
+
+body{
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 600;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+button{ font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; }
+a{ color: inherit; text-decoration: none; }
+img{ display: block; }
+figure, h1, h2, h3, p{ margin: 0; }
+::selection{ background: #d0cdc3; }
+
+/* ---------------------------------------------------------------- header */
+.l-header{
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 800;
+  pointer-events: none;
+}
+.l-header__inner{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--pad);
+}
+
+.brand{
+  pointer-events: auto;
+  display: flex;
+  align-items: baseline;
+  gap: .7em;
+  line-height: 1;
+}
+.brand__cn{
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+.nav{
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 20px;
+  font-size: clamp(14px, .9375vw, 18px);
+  letter-spacing: 0;
+}
+.nav__item{
+  position: relative;
+  display: inline-block;
+  transition: opacity .45s var(--ease-soft), transform .55s var(--ease-out);
+}
+.nav__item:after{
+  content: "";
+  position: absolute;
+  left: 0; bottom: -2px;
+  width: 100%; height: 1px;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: right top;
+  transition: transform .6s var(--ease-link);
+}
+.nav__item:hover:after{ transform: scaleX(1); transform-origin: left top; }
+
+.nav__sep{ padding-right: .32em; }
+.nav__close{
+  position: absolute;
+  top: 0; right: 0;
+  opacity: 0;
+  transform: translateY(105%);
+  pointer-events: none;
+}
+.nav__close:after{ display: none; }
+
+body.is-cat .nav__item:not(.nav__close),
+body.is-detail .nav__item:not(.nav__close),
+body.is-about .nav__item:not(.nav__close){
+  opacity: 0;
+  transform: translateY(-105%);
+  pointer-events: none;
+}
+body.is-cat .nav__close,
+body.is-detail .nav__close,
+body.is-about .nav__close{
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* the tiny crosshair mark, top centre */
+.scope{
+  position: fixed;
+  left: 50%; top: calc(var(--pad) + 1px);
+  width: 9px; height: 9px;
+  margin-left: -4.5px;
+  z-index: 400;
+  pointer-events: none;
+  transition: transform 1.1s var(--ease-out), opacity .6s var(--ease-soft);
+}
+.scope span{
+  position: absolute;
+  background: var(--ink);
+  transition: .5s var(--ease-soft);
+}
+.scope .l1{ left: 50%; top: 0; width: 1px; height: 3px; }
+.scope .l2{ left: 0; top: 50%; width: 3px; height: 1px; }
+.scope .l3{ left: 50%; bottom: 0; width: 1px; height: 3px; }
+.scope .l4{ right: 0; top: 50%; width: 3px; height: 1px; }
+body.is-detail .scope{ transform: rotate(180deg) scale(.82); opacity: .5; }
+
+/* ------------------------------------------------------- index : covers */
+.stage{
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 10;
+  transition: opacity .9s var(--ease-soft);
+}
+body.is-cat .stage,
+body.is-about .stage{
+  opacity: 0;
+  pointer-events: none;
+}
+body.is-detail .stage{
+  opacity: 0;
+  transition: opacity .72s var(--ease-soft) .42s;
+  pointer-events: none;
+}
+
+.track{
+  display: flex;
+  align-items: center;
+  height: 100%;
+  will-change: transform;
+  transform: translate3d(0,0,0);
+}
+
+/* holds the opening tilt so it never fights the scroll transform */
+.tilt{
+  height: calc(100% - 52px);
+  transform-origin: 50% 45%;
+  will-change: transform;
+}
+
+.cover-sec{
+  flex: 0 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 calc(var(--secgap) / 2);
+}
+
+.wall{
+  display: flex;
+  align-items: flex-start;
+  gap: calc(var(--cstep) - var(--cell));
+  /* always five rows tall so every category lines up with its neighbours */
+  height: calc(var(--rstep) * 4 + var(--cell));
+}
+.wcol{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: calc(var(--rstep) - var(--cell));
+}
+
+.sec-title{ display: none; }
+
+.cell{
+  position: relative;
+  width: var(--cell);
+  height: var(--cell);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-in;
+  opacity: 0;
+  transition: opacity .95s var(--ease-soft) var(--d, 0ms);
+  -webkit-tap-highlight-color: transparent;
+}
+.cell.is-in{ opacity: 1; }
+
+/* the pointer lights up its neighbourhood; everything else washes back
+   into the paper. --dim is written from JS */
+.cell:after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  opacity: var(--dim, 0);
+  transition: opacity .3s var(--ease-soft);
+  pointer-events: none;
+}
+
+.cell img{
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity .8s var(--ease-soft);
+  -webkit-user-drag: none;
+  user-select: none;
+}
+.cell.is-loaded img{ opacity: 1; }
+
+/* ------------------------------------------------------------ intro (once) */
+.intro{
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: var(--bg);
+  overflow: hidden;
+  /* the paper dissolves instead of cutting away — the wall is already
+     moving underneath while the cover is still expanding */
+  transition: background-color 1.15s cubic-bezier(.4,0,.35,1);
+}
+.intro.is-out{
+  background-color: rgba(231, 229, 222, 0);
+  pointer-events: none;
+}
+
+.intro__stage{
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 60%;
+  transition: transform .8s cubic-bezier(.45,0,.75,1), opacity .32s linear .52s;
+}
+.intro.is-zoom .intro__stage{
+  transform: translate3d(0, -104vh, 0) scale(1.02);
+  opacity: 0;
+}
+
+/* the masthead: the name set as wide as the page, bleeding off both edges */
+.intro__mark{
+  position: absolute;
+  left: 50%;
+  top: .08em;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 20vw;          /* JS rewrites this so the line fits the width */
+  font-weight: 700;
+  letter-spacing: -.045em;
+  line-height: 1;
+  color: var(--ink);
+  user-select: none;
+}
+.intro__mark .w{ display: inline-block; }
+.intro__mark .w + .w{ margin-left: .16em; }
+
+/* every letter rolls through a stack of copies, like a slot reel */
+.ch{
+  display: inline-block;
+  vertical-align: top;
+  height: .88em;
+  overflow: hidden;
+}
+.ch b{
+  display: block;
+  will-change: transform;
+}
+/* one letter at a time, left to right; the class is re-applied for each pass */
+.intro.is-rolling .ch b{
+  animation: roll .43s cubic-bezier(.62,.02,.34,1) 1 both;
+  animation-delay: var(--t, 0ms);
+}
+.ch i{
+  display: block;
+  height: .88em;
+  line-height: .88em;
+  font-style: normal;
+}
+@keyframes roll{
+  from{ transform: translateY(0); }
+  to{ transform: translateY(-.88em); }
+}
+
+.intro__photo{
+  position: absolute;
+  left: 50%;
+  top: 65%;
+  /* never crops: the plate keeps the photograph's own aspect ratio */
+  width: min(54vw, 76vh);
+  height: auto;
+  aspect-ratio: 1.7778;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  background: #dedbd2;
+}
+.intro__photo img{
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: 0;
+  transition: opacity .75s var(--ease-soft);
+}
+.intro__photo.is-loaded img{ opacity: 1; }
+
+.intro__plus{
+  position: absolute;
+  top: 64%;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ink-3);
+  pointer-events: none;
+  user-select: none;
+}
+.intro__plus.is-l{ left: 18%; }
+.intro__plus.is-r{ right: 18%; }
+
+/* ------------------------------------------------------ category grid */
+.catview{
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.05s var(--ease-soft);
+}
+body.is-cat .catview{
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity .95s var(--ease-soft) .28s;
+}
+body.is-detail .catview{
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .7s var(--ease-soft) .38s;
+}
+
+.catview__title{ display: none; }
+
+.grid{
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-bottom: 13vh;
+}
+.gcol{
+  width: var(--colw);
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.gcell{
+  height: var(--rowh);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-in;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 1.15s var(--ease-soft), transform 1.5s var(--ease-out);
+}
+.gcell.is-in{ opacity: 1; transform: none; }
+
+.frame{
+  position: relative;
+  margin: 0;
+  aspect-ratio: var(--ar, 1.5);
+  height: var(--fh, 100px);
+  overflow: hidden;
+  background: #dedbd2;
+}
+.frame img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.1s var(--ease-soft);
+  -webkit-user-drag: none;
+  user-select: none;
+}
+.frame.is-loaded img{ opacity: 1; }
+
+.topfade{ display: none; }
+
+/* ------------------------------------------------------------- hud: cat */
+.hud-cat{
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--grid) * .55);
+  transform: translateX(-50%);
+  z-index: 300;
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: opacity .5s var(--ease-soft);
+}
+.hud-cat .t{
+  position: relative;
+  display: inline-block;
+}
+.hud-cat h2{
+  position: relative;
+  display: block;
+  margin: 0;
+  font-size: var(--fs-title);
+  font-weight: 600;
+  letter-spacing: -.04em;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: opacity .42s var(--ease-soft), transform .55s var(--ease-out);
+}
+.hud-cat h2:after{
+  content: "";
+  position: absolute;
+  left: 0; bottom: -.04em;
+  width: 100%; height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right top;
+  transition: transform .6s var(--ease-link);
+}
+.hud-cat h2:hover:after{ transform: scaleX(1); transform-origin: left top; }
+
+.hud-cat .n{
+  position: absolute;
+  left: calc(100% + .38em);
+  top: .32em;
+  font-size: clamp(14px, .9375vw, 18px);
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink);
+  transition: opacity .42s var(--ease-soft), transform .55s var(--ease-out);
+}
+.hud-cat .all{
+  margin-top: .62em;
+  font-size: clamp(14px, .9375vw, 18px);
+  letter-spacing: 0;
+  color: var(--ink);
+  transition: opacity .42s var(--ease-soft);
+}
+.hud-cat.is-swap h2{ opacity: 0; transform: translateY(-14px); }
+.hud-cat.is-swap .n,
+.hud-cat.is-swap .all{ opacity: 0; }
+
+body.is-detail .hud-cat,
+body.is-about .hud-cat{ opacity: 0; }
+body.is-intro .hud-cat,
+body.is-intro .hud-mode,
+body.is-intro .c-scroll{ opacity: 0; }
+
+/* --------------------------------------------------------- hud: mode */
+.hud-mode{
+  position: fixed;
+  right: calc(var(--grid) - 6px);
+  bottom: calc(var(--grid) - 8px);
+  display: flex;
+  align-items: center;
+  z-index: 320;
+  transition: opacity .5s var(--ease-soft);
+}
+body.is-detail .hud-mode,
+body.is-about .hud-mode{ opacity: 0; pointer-events: none; }
+
+.mode-btn{
+  width: 40px; height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: .5;
+  transition: opacity .45s var(--ease-soft);
+}
+.mode-btn:hover{ opacity: 1; }
+.mode-btn.is-on{ opacity: 1; }
+.mode-btn svg{ display: block; overflow: hidden; }
+
+.mode-btn .gt{ transition: transform .5s var(--ease-out); }
+.mode-btn:hover .gt{ transform: translateX(-6px); }
+
+/* ------------------------------------------------------- scrollbar */
+.c-scroll{
+  transition: opacity .8s var(--ease-soft);
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 1px;
+  height: 100vh;
+  background: var(--hair);
+  z-index: 200;
+}
+body.is-cat .c-scroll,
+body.is-detail .c-scroll,
+body.is-about .c-scroll{ opacity: 0; }
+.c-scroll__thumb{
+  position: absolute;
+  right: 0;
+  width: 1px;
+  background: var(--ink);
+  transition: top .06s linear;
+}
+
+/* --------------------------------------------------------------- detail */
+.detail{
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  pointer-events: none;
+}
+.detail__photo{
+  position: absolute;
+  left: 0; top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+  cursor: zoom-out;
+  opacity: 0;
+  transition: opacity .45s var(--ease-soft);
+}
+.detail__photo.is-visible{ opacity: 1; }
+
+.detail__cat{
+  position: absolute;
+  left: var(--pad);
+  top: 50%;
+  display: flex;
+  align-items: center;
+  gap: 1.1em;
+  opacity: 0;
+  transform: translate(-8px, -50%);
+  transition: opacity .7s var(--ease-soft), transform 1s var(--ease-out);
+}
+.detail__cat .k{
+  font-size: 9px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.detail__cat .v{
+  font-size: 13px;
+  letter-spacing: .02em;
+}
+
+.detail__rail{
+  position: absolute;
+  right: calc(var(--pad) + 26px);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  opacity: 0;
+  transition: opacity .7s var(--ease-soft), transform 1s var(--ease-out);
+}
+.detail__rail .th{
+  width: 34px;
+  height: 45px;
+  position: relative;
+  cursor: pointer;
+  opacity: .55;
+  transition: opacity .4s var(--ease-soft);
+}
+.detail__rail .th img{
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.detail__rail .th:hover{ opacity: 1; }
+.detail__rail .th:after{
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border: 1px solid var(--ink);
+  opacity: 0;
+  transform: scale(.94);
+  transition: opacity .45s var(--ease-soft), transform .6s var(--ease-out);
+}
+.detail__rail .th.is-on{ opacity: 1; cursor: default; }
+.detail__rail .th.is-on:after{ opacity: .5; transform: scale(1); }
+
+.detail__count{
+  position: absolute;
+  right: calc(var(--pad) + 30px);
+  bottom: calc(var(--pad) + 6px);
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: var(--ink-2);
+  opacity: 0;
+  transition: opacity .7s var(--ease-soft);
+}
+
+.detail.is-open{ pointer-events: auto; }
+.detail.is-ready .detail__cat{ opacity: 1; transform: translate(0, -50%); }
+.detail.is-ready .detail__rail{ opacity: 1; }
+.detail.is-ready .detail__count{ opacity: 1; }
+
+.detail.is-closing .detail__cat,
+.detail.is-closing .detail__rail,
+.detail.is-closing .detail__count{ opacity: 0; transition: opacity .28s var(--ease-soft); }
+
+/* ----------------------------------------------------------------- about */
+.about{
+  position: fixed;
+  inset: 0;
+  z-index: 700;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 var(--pad);
+  pointer-events: none;
+}
+.about__bg{
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  opacity: 0;
+  transition: opacity .9s var(--ease-soft);
+}
+.about__inner{
+  position: relative;
+  max-width: 26em;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity .8s var(--ease-soft) .25s, transform 1.1s var(--ease-out) .25s;
+}
+.about__inner p{
+  margin: 0 0 1.4em;
+  font-size: clamp(14px, .9375vw, 17px);
+  line-height: 1.85;
+  font-weight: 500;
+  letter-spacing: .01em;
+  color: var(--ink-2);
+}
+.about__inner p:first-child{ color: var(--ink); }
+.about.is-open{ pointer-events: auto; }
+.about.is-open .about__bg{ opacity: 1; }
+.about.is-open .about__inner{ opacity: 1; transform: none; }
+
+/* ------------------------------------------------------------- responsive */
+@media (max-width: 1200px){
+  :root{
+    --colw: 22vw;
+    --rowh: 13vh;
+  }
+}
+
+@media (max-width: 760px){
+  :root{ --pad: 20px; }
+
+  body{ overflow: auto; overflow-x: hidden; }
+  body.is-cat{ overflow: hidden; }
+
+  .intro__mark{ font-size: 34vw; }
+  .intro__photo{ width: 88vw; top: 56%; }
+  .intro__plus{ top: 60%; }
+  .intro__plus.is-l{ left: 8%; }
+  .intro__plus.is-r{ right: 8%; }
+
+  .l-header__inner{ padding: 20px; }
+
+  /* index becomes a vertical stack of category walls */
+  .stage{ position: relative; inset: auto; height: auto; overflow: visible; transition: none; }
+  body.is-cat .stage,
+  body.is-detail .stage,
+  body.is-about .stage{ transform: none; filter: none; }
+  .track{ display: block; height: auto; transform: none !important; }
+  .tilt{ display: block; height: auto; transform: none !important; }
+
+  .cover-sec{
+    display: block;
+    width: 100%;
+    height: auto;
+    padding: 0 20px;
+    margin-bottom: 13vw;
+  }
+  .cover-sec:first-child{ padding-top: 15vh; }
+
+  .sec-title{
+    display: block;
+    margin: 0 0 5vw;
+    font-size: 13vw;
+    font-weight: 600;
+    letter-spacing: -.04em;
+    line-height: 1;
+  }
+  .wall{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4vw 4vw;
+    align-items: center;
+    height: auto;
+  }
+  .wcol{ display: contents; }
+  .cell{
+    width: 100%;
+    height: auto;
+    opacity: 1;
+  }
+  .cell img{
+    width: 100%;
+    height: auto;
+    max-height: none;
+    opacity: 1;
+  }
+
+  /* category view scrolls on its own */
+  .catview{
+    display: block;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 15vh 0 12vh;
+    transform: none;
+  }
+  body.is-cat .catview,
+  body.is-detail .catview{ transform: none; }
+
+  .topfade{
+    display: block;
+    position: fixed;
+    left: 0; right: 0; top: 0;
+    height: 96px;
+    z-index: 30;
+    pointer-events: none;
+    background: linear-gradient(to bottom,
+      rgba(231,229,222,1) 0%,
+      rgba(231,229,222,.9) 52%,
+      rgba(231,229,222,0) 100%);
+    opacity: 0;
+    transition: opacity .6s var(--ease-soft);
+  }
+  body.is-cat .topfade{ opacity: 1; }
+
+  .catview__title{
+    display: block;
+    margin: 0 0 8vh;
+    padding: 0 20px;
+    font-size: 15vw;
+    font-weight: 600;
+    letter-spacing: -.03em;
+    line-height: 1;
+  }
+
+  .grid{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6vw 5vw;
+    padding: 0 5vw;
+    align-items: start;
+  }
+  .gcol{ display: contents; }
+  .gcell{
+    width: auto;
+    height: auto;
+    display: block;
+  }
+  .frame{
+    height: auto !important;
+    width: 100% !important;
+    aspect-ratio: var(--ar, 1.5);
+  }
+
+  .hud-cat{ display: none; }
+  .hud-mode{ display: none; }
+  .c-scroll{ display: none; }
+  .scope{ top: 16px; }
+
+  .detail__cat{
+    left: 20px;
+    top: auto;
+    bottom: 24px;
+    transform: none;
+  }
+  .detail.is-ready .detail__cat{ transform: none; }
+  .detail__rail{ display: none; }
+  .detail__count{
+    right: 20px;
+    bottom: 26px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+
+  <header class="l-header">
+    <div class="l-header__inner">
+      <a class="brand" href="#" id="brand" aria-label="Aric Elliot 影像索引">
+        <span class="brand__cn">Aric Elliot</span>
+      </a>
+      <nav class="nav">
+        <a class="nav__item" href="#" id="navWork">Work</a><span class="nav__item nav__sep">,</span>
+        <a class="nav__item" href="#" id="navAbout">About</a>
+        <a class="nav__item nav__close" href="#" id="navClose">Close</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="scope" aria-hidden="true">
+    <span class="l1"></span><span class="l2"></span><span class="l3"></span><span class="l4"></span>
+  </div>
+
+  <main class="stage" id="stage" aria-label="Categories">
+    <div class="tilt" id="tilt">
+      <div class="track" id="track"></div>
+    </div>
+  </main>
+
+  <div class="intro" id="intro" aria-hidden="true">
+    <div class="intro__stage" id="introStage">
+      <div class="intro__mark" id="introMark" aria-hidden="true"></div>
+      <figure class="intro__photo" id="introPhoto">
+        <img src="photos/full/nian-14.jpg" alt="" width="2200" height="1238">
+      </figure>
+      <span class="intro__plus is-l">+</span>
+      <span class="intro__plus is-r">+</span>
+    </div>
+  </div>
+
+  <section class="catview" id="catView" aria-label="Photographs in this category" aria-hidden="true">
+    <h2 class="catview__title" id="catViewTitle"></h2>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <div class="topfade" aria-hidden="true"></div>
+
+  <div class="hud-cat" id="hudCat" aria-live="polite">
+    <div class="t">
+      <h2 id="catName">年</h2><span class="n" id="catNum">( 15 )</span>
+    </div>
+    <div class="all" id="catAll">/56 Photos</div>
+  </div>
+
+  <div class="hud-mode">
+    <button class="mode-btn is-on" id="modeGrid" type="button" aria-label="Back to index">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <g class="gt">
+          <rect x="0" y="0" width="4" height="4" fill="currentColor"/>
+          <rect x="6" y="0" width="4" height="4" fill="currentColor"/>
+          <rect x="12" y="0" width="4" height="4" fill="currentColor"/>
+          <rect x="0" y="6" width="4" height="4" fill="currentColor"/>
+          <rect x="6" y="6" width="4" height="4" fill="currentColor"/>
+          <rect x="12" y="6" width="4" height="4" fill="currentColor"/>
+          <rect x="0" y="12" width="4" height="4" fill="currentColor"/>
+          <rect x="6" y="12" width="4" height="4" fill="currentColor"/>
+          <rect x="12" y="12" width="4" height="4" fill="currentColor"/>
+        </g>
+      </svg>
+    </button>
+    <button class="mode-btn" id="modeFull" type="button" aria-label="Open">
+      <svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true">
+        <g class="gt">
+          <rect x="0" y="1" width="18" height="2" fill="currentColor"/>
+          <rect x="0" y="7" width="18" height="2" fill="currentColor"/>
+          <rect x="0" y="13" width="18" height="2" fill="currentColor"/>
+        </g>
+      </svg>
+    </button>
+  </div>
+
+  <div class="c-scroll" aria-hidden="true"><div class="c-scroll__thumb" id="scrollThumb"></div></div>
+
+  <div class="detail" id="detail" role="dialog" aria-modal="true" aria-label="Photo view" aria-hidden="true">
+    <img class="detail__photo" id="detailPhoto" alt="">
+    <div class="detail__cat">
+      <span class="k">Category</span>
+      <span class="v" id="detailCat">年</span>
+    </div>
+    <div class="detail__rail" id="detailRail"></div>
+    <div class="detail__count" id="detailCount"></div>
+  </div>
+
+  <div class="about" id="about" aria-hidden="true">
+    <div class="about__bg" id="aboutClose"></div>
+    <div class="about__inner">
+      <p>Aric Elliot — 一份关于西部高原与山地的影像索引。</p>
+      <p>四年间反复经过西藏、青海与贵州，把路上停下来的那些片刻收在一起。照片不排序，也不解释，只是按地点静静摊开。</p>
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------ data */
+
+  var PHOTOS = [
+    { key: 'nian-01', cat: '年', ar: 1.7778 },
+    { key: 'nian-02', cat: '年', ar: 1.7777 },
+    { key: 'nian-03', cat: '年', ar: 1.7777 },
+    { key: 'nian-04', cat: '年', ar: 1.7778 },
+    { key: 'nian-05', cat: '年', ar: 1.7778 },
+    { key: 'nian-06', cat: '年', ar: 1.7776 },
+    { key: 'nian-07', cat: '年', ar: 1.7775 },
+    { key: 'nian-08', cat: '年', ar: 1.7778 },
+    { key: 'nian-09', cat: '年', ar: 1.7776 },
+    { key: 'nian-10', cat: '年', ar: 1.7778 },
+    { key: 'nian-11', cat: '年', ar: 1.778 },
+    { key: 'nian-12', cat: '年', ar: 1.7778 },
+    { key: 'nian-13', cat: '年', ar: 1.7776 },
+    { key: 'nian-14', cat: '年', ar: 1.7778 },
+    { key: 'nian-15', cat: '年', ar: 1.7778 },
+    { key: 'xizang-01', cat: '西藏', ar: 1.7778 },
+    { key: 'xizang-02', cat: '西藏', ar: 1.7776 },
+    { key: 'xizang-03', cat: '西藏', ar: 1.7778 },
+    { key: 'xizang-04', cat: '西藏', ar: 1.7781 },
+    { key: 'xizang-05', cat: '西藏', ar: 1.7776 },
+    { key: 'xizang-06', cat: '西藏', ar: 1.7778 },
+    { key: 'xizang-07', cat: '西藏', ar: 1.7778 },
+    { key: 'xizang-08', cat: '西藏', ar: 1.778 },
+    { key: 'xizang-09', cat: '西藏', ar: 1.7778 },
+    { key: 'xizang-10', cat: '西藏', ar: 1.7775 },
+    { key: 'xizang-11', cat: '西藏', ar: 1.7778 },
+    { key: 'xizang-12', cat: '西藏', ar: 1.7778 },
+    { key: 'xizang-13', cat: '西藏', ar: 1.7778 },
+    { key: 'xizang-14', cat: '西藏', ar: 1.7776 },
+    { key: 'xizang-15', cat: '西藏', ar: 1.7776 },
+    { key: 'guizhou-01', cat: '贵州', ar: 1.7778 },
+    { key: 'guizhou-02', cat: '贵州', ar: 1.7778 },
+    { key: 'guizhou-03', cat: '贵州', ar: 1.7774 },
+    { key: 'guizhou-04', cat: '贵州', ar: 1.7781 },
+    { key: 'guizhou-05', cat: '贵州', ar: 0.6666 },
+    { key: 'guizhou-06', cat: '贵州', ar: 1.7779 },
+    { key: 'guizhou-07', cat: '贵州', ar: 1.7778 },
+    { key: 'guizhou-08', cat: '贵州', ar: 1.5 },
+    { key: 'guizhou-09', cat: '贵州', ar: 1.7779 },
+    { key: 'guizhou-10', cat: '贵州', ar: 1.5016 },
+    { key: 'guizhou-11', cat: '贵州', ar: 1.4978 },
+    { key: 'qinghai-01', cat: '青海', ar: 1.7777 },
+    { key: 'qinghai-02', cat: '青海', ar: 1.7775 },
+    { key: 'qinghai-03', cat: '青海', ar: 1.7778 },
+    { key: 'qinghai-04', cat: '青海', ar: 1.7779 },
+    { key: 'qinghai-05', cat: '青海', ar: 1.7779 },
+    { key: 'qinghai-06', cat: '青海', ar: 1.778 },
+    { key: 'qinghai-07', cat: '青海', ar: 1.778 },
+    { key: 'qinghai-08', cat: '青海', ar: 1.7776 },
+    { key: 'qinghai-09', cat: '青海', ar: 1.7778 },
+    { key: 'qinghai-10', cat: '青海', ar: 1.7775 },
+    { key: 'qinghai-11', cat: '青海', ar: 1.7775 },
+    { key: 'qinghai-12', cat: '青海', ar: 1.7778 },
+    { key: 'qinghai-13', cat: '青海', ar: 1.778 },
+    { key: 'qinghai-14', cat: '青海', ar: 1.7776 },
+    { key: 'qinghai-15', cat: '青海', ar: 1.7777 }
+  ];
+
+  var CATS = ['年', '西藏', '贵州', '青海'];
+  var THUMB = 'photos/thumb/';
+  var GRID  = 'photos/grid/';
+  var FULL  = 'photos/full/';
+
+  /* the covers still pick the photo a category is introduced with */
+  var COVERS = {
+    '年':   'nian-10',
+    '西藏': 'xizang-07',
+    '贵州': 'guizhou-01',
+    '青海': 'qinghai-09'
+  };
+
+  PHOTOS.forEach(function (p, i) {
+    p.i = i;
+    p.thumb = THUMB + p.key + '.jpg';
+    p.grid  = GRID + p.key + '.jpg';
+    p.full  = FULL + p.key + '.jpg';
+  });
+
+  /* --------------------------------------------------------------- elements */
+
+  var track = document.getElementById('track');
+  var stage = document.getElementById('stage');
+  var grid = document.getElementById('grid');
+  var catView = document.getElementById('catView');
+  var catViewTitle = document.getElementById('catViewTitle');
+  var hudCat = document.getElementById('hudCat');
+  var catName = document.getElementById('catName');
+  var catNum = document.getElementById('catNum');
+  var catAll = document.getElementById('catAll');
+  var scrollThumb = document.getElementById('scrollThumb');
+  var detail = document.getElementById('detail');
+  var dPhoto = document.getElementById('detailPhoto');
+  var dCat = document.getElementById('detailCat');
+  var dRail = document.getElementById('detailRail');
+  var dCount = document.getElementById('detailCount');
+  var about = document.getElementById('about');
+  var modeGrid = document.getElementById('modeGrid');
+  var modeFull = document.getElementById('modeFull');
+
+  function isMobile() { return window.matchMedia('(max-width: 760px)').matches; }
+
+  /* ----------------------------------------------------------------- build */
+
+  var SECTIONS = CATS.map(function (cat) {
+    var items = PHOTOS.filter(function (p) { return p.cat === cat; });
+    var cover = PHOTOS.filter(function (p) { return p.key === COVERS[cat]; })[0] || items[0];
+    return { cat: cat, items: items, cover: cover };
+  });
+
+  var idxSecs = [];
+  var offsets = [];
+  var W = 0;
+  var pos = 0;
+  var target = 0;
+  var lastT = 0;
+  var focused = 0;
+  var view = 'index';       // 'index' | 'cat'
+  var gridCells = {};       // photo index -> cell element in the current grid
+  var wallCells = {};       // photo index -> cell element on the opening wall
+  var swapTimer = 0;
+  var isIntro = false;
+
+  function buildIndex() {
+    track.innerHTML = '';
+    idxSecs = [];
+    wallCells = {};
+
+    for (var copy = 0; copy < 2; copy++) {
+      SECTIONS.forEach(function (sec, si) {
+        var s = document.createElement('section');
+        s.className = 'cover-sec';
+        s.dataset.s = si;
+
+        var title = document.createElement('h2');
+        title.className = 'sec-title';
+        title.textContent = sec.cat;
+        s.appendChild(title);
+
+        var wall = document.createElement('div');
+        wall.className = 'wall';
+
+        /* stack the category into 5-row columns, like the reference */
+        var rows = 5;
+        var cols = Math.max(1, Math.ceil(sec.items.length / rows));
+        var base = Math.floor(sec.items.length / cols);
+        var extra = sec.items.length % cols;
+        var at = 0;
+
+        for (var c = 0; c < cols; c++) {
+          var col = document.createElement('div');
+          col.className = 'wcol';
+          var n = base + (c < extra ? 1 : 0);
+
+          for (var r = 0; r < n; r++) {
+            var p = sec.items[at++];
+
+            var cell = document.createElement('figure');
+            cell.className = 'cell';
+            cell.dataset.i = p.i;
+            cell.setAttribute('role', 'button');
+            cell.setAttribute('tabindex', copy === 0 ? '0' : '-1');
+            cell.setAttribute('aria-label', p.cat + ' — ' + (at));
+            cell.style.setProperty('--d', (si * 40 + c * 70 + r * 46) + 'ms');
+
+            var img = document.createElement('img');
+            img.alt = '';
+            img.decoding = 'async';
+            img.draggable = false;
+            img.width = 480;
+            img.height = Math.round(480 / p.ar);
+            bindLoaded(cell, img);
+            img.src = p.grid;
+
+            cell.appendChild(img);
+            col.appendChild(cell);
+
+            if (copy === 0) wallCells[p.i] = cell;
+          }
+          wall.appendChild(col);
+        }
+
+        s.appendChild(wall);
+        track.appendChild(s);
+        if (copy === 0) idxSecs.push(s);
+      });
+    }
+  }
+
+  function revealWall() {
+    var cells = track.querySelectorAll('.cell');
+    for (var i = 0; i < cells.length; i++) cells[i].classList.add('is-in');
+  }
+
+  function measure() {
+    offsets = [];
+    W = 0;
+    for (var i = 0; i < idxSecs.length; i++) {
+      offsets.push(W);
+      W += idxSecs[i].getBoundingClientRect().width;
+    }
+    if (!W) return;
+    target = ((target % W) + W) % W;
+    pos = target;
+  }
+
+  /* --------------------------------------------------------------- scroll */
+
+  function frame(now) {
+    var dt = Math.min(48, now - (lastT || now));
+    lastT = now;
+
+    var k = 1 - Math.exp(-dt * 0.0082);
+    pos += (target - pos) * k;
+    if (Math.abs(target - pos) < 0.01) pos = target;
+
+    var x = W ? ((pos % W) + W) % W : 0;
+    track.style.transform = 'translate3d(' + (-x).toFixed(2) + 'px,0,0)';
+
+    if (W && scrollThumb) {
+      var vw = window.innerWidth;
+      var h = Math.max(10, (vw / W) * window.innerHeight);
+      scrollThumb.style.height = h + 'px';
+      scrollThumb.style.top = ((x / W) * (window.innerHeight - h)) + 'px';
+    }
+
+    if (W && !isMobile()) {
+      var idx;
+      if (hoverSec >= 0) {
+        idx = hoverSec;             /* whatever sits under the pointer wins */
+      } else {
+        var m = (((x + window.innerWidth / 2) % W) + W) % W;
+        idx = 0;
+        for (var i = 0; i < offsets.length; i++) if (m >= offsets[i]) idx = i;
+      }
+      if (idx !== focused && view === 'index') setCat(idx);
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  function setCat(idx, immediate) {
+    var sec = SECTIONS[idx];
+    if (!sec) return;
+    focused = idx;
+
+    if (immediate) {
+      window.clearTimeout(swapTimer);
+      hudCat.classList.remove('is-swap');
+      catName.textContent = sec.cat;
+      catNum.textContent = '( ' + sec.items.length + ' )';
+      return;
+    }
+
+    hudCat.classList.add('is-swap');
+    window.clearTimeout(swapTimer);
+    swapTimer = window.setTimeout(function () {
+      catName.textContent = sec.cat;
+      catNum.textContent = '( ' + sec.items.length + ' )';
+      hudCat.classList.remove('is-swap');
+    }, 240);
+  }
+
+  /* ---------------------------------------------------------------- wheel */
+
+  function normDelta(e) {
+    var d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (e.deltaMode === 1) d *= 18;
+    else if (e.deltaMode === 2) d *= window.innerHeight;
+    return d;
+  }
+
+  function onWheel(e) {
+    if (about.classList.contains('is-open') || isIntro) return;
+
+    /* inside a photo: the wheel pages through the set */
+    if (isOpen) {
+      e.preventDefault();
+      if (closing || !detail.classList.contains('is-ready')) return;
+      var now = performance.now();
+      if (now < wheelLock) return;
+
+      wheelAcc += normDelta(e);
+      if (Math.abs(wheelAcc) >= 42) {
+        var dir = wheelAcc > 0 ? 1 : -1;
+        wheelAcc = 0;
+        wheelLock = now + 640;
+        step(dir);
+      }
+      return;
+    }
+
+    wheelAcc = 0;
+    if (view !== 'index' || isMobile()) return;
+    e.preventDefault();
+    target += normDelta(e) * 1.15;
+  }
+
+  document.addEventListener('wheel', onWheel, { passive: false });
+
+  /* ---------------------------------------------------------- spotlight */
+
+  var hoverSec = -1;
+  var spotX = 0, spotY = 0, spotOn = false, spotRaf = 0;
+
+  function clearSpot() {
+    spotOn = false;
+    var cells = track.querySelectorAll('.cell');
+    for (var i = 0; i < cells.length; i++) cells[i].style.setProperty('--dim', '0');
+  }
+
+  function paintSpot() {
+    spotRaf = 0;
+    if (!spotOn || isIntro || view !== 'index' || isMobile() || isOpen) return;
+
+    var vw = window.innerWidth;
+    /* an upright oval, not a circle: the lit area reads as a band of
+       columns, the way the reference does it */
+    var rIn = vw * 0.055;
+    var rOut = vw * 0.21;
+    var cells = track.querySelectorAll('.cell');
+    var n = cells.length;
+    var dims = new Array(n);
+    var i, r, d, t;
+
+    /* read everything first, then write — no layout thrash */
+    for (i = 0; i < n; i++) {
+      r = cells[i].getBoundingClientRect();
+      if (r.right < -100 || r.left > vw + 100) { dims[i] = 0.9; continue; }
+      var cx = r.left + r.width / 2;
+      var cy = r.top + r.height / 2;
+      var dx = cx - spotX;
+      var dy = (cy - spotY) * 0.55;
+      d = Math.sqrt(dx * dx + dy * dy);
+      t = (d - rIn) / (rOut - rIn);
+      if (t < 0) t = 0; else if (t > 1) t = 1;
+      t = t * t * (3 - 2 * t);
+      dims[i] = Math.round(0.9 * t * 1000) / 1000;
+    }
+    for (i = 0; i < n; i++) cells[i].style.setProperty('--dim', dims[i]);
+  }
+
+  stage.addEventListener('mousemove', function (e) {
+    if (isIntro || isMobile()) return;
+    spotOn = true;
+    spotX = e.clientX;
+    spotY = e.clientY;
+    var sec = e.target.closest('.cover-sec');
+    hoverSec = sec ? Number(sec.dataset.s) : -1;
+    if (!spotRaf) spotRaf = requestAnimationFrame(paintSpot);
+  });
+
+  stage.addEventListener('mouseleave', function () {
+    hoverSec = -1;
+    clearSpot();
+  });
+
+  /* touch drag for wide touch screens */
+  var dragStart = 0, dragBase = 0, dragging = false, dragMoved = false;
+
+  stage.addEventListener('touchstart', function (e) {
+    if (isMobile() || e.touches.length !== 1 || view !== 'index') return;
+    dragging = true; dragMoved = false;
+    dragStart = e.touches[0].clientX;
+    dragBase = target;
+  }, { passive: true });
+
+  stage.addEventListener('touchmove', function (e) {
+    if (!dragging) return;
+    var dx = e.touches[0].clientX - dragStart;
+    if (Math.abs(dx) > 6) dragMoved = true;
+    target = dragBase - dx * 1.1;
+  }, { passive: true });
+
+  stage.addEventListener('touchend', function () {
+    dragging = false;
+    window.setTimeout(function () { dragMoved = false; }, 40);
+  }, { passive: true });
+
+  /* ------------------------------------------------------- category view */
+
+  function buildGrid(si) {
+    var sec = SECTIONS[si];
+    var n = sec.items.length;
+
+    grid.innerHTML = '';
+    gridCells = {};
+
+    var base = Math.floor(n / 3);
+    var extra = n % 3;
+    var sizes = [base, base, base];
+    var order = [1, 0, 2];
+    for (var e = 0; e < extra; e++) sizes[order[e]] += 1;
+
+    var at = 0;
+    for (var c = 0; c < 3; c++) {
+      if (!sizes[c]) continue;
+      var col = document.createElement('div');
+      col.className = 'gcol';
+
+      for (var k = 0; k < sizes[c]; k++) {
+        var p = sec.items[at++];
+
+        var cell = document.createElement('div');
+        cell.className = 'gcell';
+        cell.dataset.i = p.i;
+        cell.style.setProperty('--d', ((k * 3 + c) * 48) + 'ms');
+
+        var fig = document.createElement('figure');
+        fig.className = 'frame';
+        fig.style.setProperty('--ar', p.ar);
+
+        var img = document.createElement('img');
+        img.alt = p.cat + ' — ' + (k + 1);
+        img.decoding = 'async';
+        img.draggable = false;
+        img.width = 1000;
+        img.height = Math.round(1000 / p.ar);
+        bindLoaded(fig, img);
+        img.src = p.thumb;
+
+        fig.appendChild(img);
+        cell.appendChild(fig);
+        col.appendChild(cell);
+
+        gridCells[p.i] = cell;
+      }
+
+      grid.appendChild(col);
+    }
+
+    sizeGrid();
+  }
+
+  function sizeGrid() {
+    if (!grid) return;
+    var vw = window.innerWidth;
+    var box = vw * 0.096;
+    if (vw <= 760) box = 0;
+    else if (vw <= 1200) box = vw * 0.105;
+
+    /* rows are a fixed height (--rowh). A portrait frame is sized to `box`,
+       which can be taller than its own row on wide/short windows — that made
+       verticals bleed into the photos above and below. Cap it to the row. */
+    var rowH = 0;
+    if (vw > 760) {
+      var probe = grid.querySelector('.gcell');
+      if (probe) rowH = probe.getBoundingClientRect().height;
+    }
+    var maxH = rowH ? rowH * 0.9 : Infinity;
+
+    var frames = grid.querySelectorAll('.frame');
+    for (var i = 0; i < frames.length; i++) {
+      var f = frames[i];
+      var ar = parseFloat(f.style.getPropertyValue('--ar')) || 1.5;
+      var h = ar >= 1 ? box / ar : box;
+      if (h > maxH) h = maxH;
+      f.style.setProperty('--fh', h + 'px');
+    }
+  }
+
+  function revealGrid() {
+    var cs = grid.querySelectorAll('.gcell');
+    for (var i = 0; i < cs.length; i++) {
+      cs[i].style.transition = 'none';
+      cs[i].classList.remove('is-in');
+    }
+    void grid.offsetWidth;
+    for (var j = 0; j < cs.length; j++) {
+      (function (el) {
+        var d = parseInt(el.style.getPropertyValue('--d'), 10) || 0;
+        el.style.transition = '';
+        window.setTimeout(function () { el.classList.add('is-in'); }, 600 + d);
+      })(cs[j]);
+    }
+  }
+
+  function openCat(si) {
+    if (view !== 'index' || isOpen) return;
+    view = 'cat';
+
+    /* bring the chosen cover towards the middle of the screen while the
+       index dissolves, so that leaving the category lands in the same place */
+    if (!isMobile() && W && offsets.length) {
+      var sw = (si + 1 < offsets.length ? offsets[si + 1] : W) - offsets[si];
+      var desired = offsets[si] + sw / 2 - window.innerWidth / 2;
+      var cur = ((target % W) + W) % W;
+      var delta = desired - cur;
+      delta = ((delta + W / 2) % W + W) % W - W / 2;
+      target += delta;
+    } else {
+      target = pos;
+    }
+
+    setCat(si, true);
+    catViewTitle.textContent = SECTIONS[si].cat;
+    buildGrid(si);
+
+    document.body.classList.add('is-cat');
+    catView.setAttribute('aria-hidden', 'false');
+
+    revealGrid();
+
+    modeGrid.classList.remove('is-on');
+    modeFull.classList.add('is-on');
+  }
+
+  function closeCat(force) {
+    if (view !== 'cat') return;
+    if (isOpen && !force) return;
+    view = 'index';
+
+    document.body.classList.remove('is-cat');
+    catView.setAttribute('aria-hidden', 'true');
+
+    modeGrid.classList.add('is-on');
+    modeFull.classList.remove('is-on');
+  }
+
+  /* --------------------------------------------------------------- detail */
+
+  var isOpen = false;
+  var closing = false;
+  var current = -1;
+  var stepToken = 0;        // cancels a pending crossfade
+  var wheelAcc = 0;         // wheel accumulation inside the detail view
+  var wheelLock = 0;        // wheel cooldown inside the detail view
+
+  function fitRect(ar) {
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    var mobile = isMobile();
+    var maxW = vw * (mobile ? 0.92 : 0.72);
+    var maxH = vh * (mobile ? 0.62 : 0.76);
+    var w = maxW;
+    var h = w / ar;
+    if (h > maxH) { h = maxH; w = h * ar; }
+    var cx = vw / 2;
+    var cy = vh * (mobile ? 0.44 : 0.47);
+    return { x: cx - w / 2, y: cy - h / 2, w: w, h: h };
+  }
+
+  function secOf(i) {
+    var cat = PHOTOS[i].cat;
+    for (var s = 0; s < SECTIONS.length; s++) if (SECTIONS[s].cat === cat) return s;
+    return 0;
+  }
+
+  function buildRail(sec, activeLocal) {
+    dRail.innerHTML = '';
+    var items = sec.items;
+    var start = Math.max(0, activeLocal - 2);
+    var end = Math.min(items.length, start + 5);
+    start = Math.max(0, end - 5);
+
+    for (var i = start; i < end; i++) {
+      (function (li) {
+        var b = document.createElement('button');
+        b.className = 'th' + (li === activeLocal ? ' is-on' : '');
+        b.type = 'button';
+        b.setAttribute('aria-label', 'Photo ' + (li + 1));
+        var im = document.createElement('img');
+        im.src = items[li].thumb;
+        im.alt = '';
+        b.appendChild(im);
+        b.addEventListener('click', function () { stepTo(li); });
+        dRail.appendChild(b);
+      })(i);
+    }
+  }
+
+  function openDetail(i, cellEl) {
+    if (isOpen || closing) return;
+
+    var p = PHOTOS[i];
+    current = i;
+    isOpen = true;
+    stepToken++;
+    wheelAcc = 0;
+    wheelLock = 0;
+    target = pos;
+
+    var sec = SECTIONS[secOf(i)];
+    var local = sec.items.indexOf(p);
+
+    var host = cellEl || gridCells[i];
+    if (!host) return;
+    var thumbRect = host.querySelector('img').getBoundingClientRect();
+    var r = fitRect(p.ar);
+
+    dPhoto.src = p.thumb;
+    dPhoto.alt = p.cat + ' — ' + (local + 1);
+    dCat.textContent = p.cat;
+    dCount.textContent = pad2(local + 1) + ' / ' + pad2(sec.items.length);
+    buildRail(sec, local);
+
+    dPhoto.style.transition = 'none';
+    dPhoto.style.opacity = '';        // clear any value left by stepTo()
+    dPhoto.style.width = r.w + 'px';
+    dPhoto.style.height = r.h + 'px';
+    dPhoto.style.transform =
+      'translate(' + thumbRect.left + 'px,' + thumbRect.top + 'px) scale(' +
+      (thumbRect.width / r.w) + ',' + (thumbRect.height / r.h) + ')';
+    dPhoto.classList.add('is-visible');
+
+    detail.classList.add('is-open');
+    detail.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('is-detail');
+
+    swapToFull(i);
+
+    void dPhoto.offsetWidth;
+
+    requestAnimationFrame(function () {
+      dPhoto.style.transition = 'transform 1.9s cubic-bezier(.45,.02,.2,1)';
+      dPhoto.style.transform = 'translate(' + r.x + 'px,' + r.y + 'px) scale(1,1)';
+    });
+
+    window.setTimeout(function () { if (isOpen) detail.classList.add('is-ready'); }, 620);
+  }
+
+  function swapToFull(i) {    var p = PHOTOS[i];
+    var im = new Image();
+    im.onload = function () {
+      if (current !== i) return;
+      dPhoto.src = p.full;
+    };
+    im.src = p.full;
+  }
+
+  /* the element a photo should fly back to: grid cell, else wall cell */
+  function cellFor(i) {
+    return gridCells[i] || wallCells[i] || null;
+  }
+
+  function closeDetail() {
+    if (!isOpen || closing) return;
+    closing = true;
+    stepToken++;                      // drop any pending crossfade callback
+    wheelAcc = 0;
+
+    var p = PHOTOS[current];
+    var cell = cellFor(current);
+    var img = cell ? cell.querySelector('img') : null;
+    var r = fitRect(p.ar);
+
+    detail.classList.remove('is-ready');
+    detail.classList.add('is-closing');
+
+    dPhoto.style.transition = 'transform 1.3s cubic-bezier(.45,.02,.2,1)';
+    dPhoto.style.opacity = '1';       // never fly back while mid-fade
+
+    if (img) {
+      var tr = img.getBoundingClientRect();
+      dPhoto.style.transform =
+        'translate(' + tr.left + 'px,' + tr.top + 'px) scale(' +
+        (tr.width / r.w) + ',' + (tr.height / r.h) + ')';
+    }
+
+    document.body.classList.remove('is-detail');
+    detail.setAttribute('aria-hidden', 'true');
+
+    window.setTimeout(function () {
+      detail.classList.remove('is-open');
+      detail.classList.remove('is-closing');
+      dPhoto.classList.remove('is-visible');
+      /* stepTo() writes an inline opacity — clearing it is what actually
+         lets the photo disappear instead of hovering over the page */
+      dPhoto.style.opacity = '';
+      dPhoto.style.transition = 'none';
+      current = -1;
+      isOpen = false;
+      closing = false;
+    }, 1460);
+  }
+
+  /* leave the photo without the fly-back — used when navigating away
+     (Work / brand), where the grid it would fly into is already gone */
+  function dismissDetail() {
+    if (!isOpen) return;
+    stepToken++;
+    closing = true;
+
+    var finish = function () {
+      detail.classList.remove('is-open');
+      detail.classList.remove('is-closing');
+      dPhoto.classList.remove('is-visible');
+      dPhoto.style.opacity = '';
+      dPhoto.style.transition = 'none';
+      current = -1;
+      isOpen = false;
+      closing = false;
+    };
+
+    detail.classList.remove('is-ready');
+    detail.classList.add('is-closing');
+    dPhoto.style.transition = 'opacity .4s var(--ease-soft)';
+    dPhoto.style.opacity = '0';
+    document.body.classList.remove('is-detail');
+    detail.setAttribute('aria-hidden', 'true');
+
+    window.setTimeout(finish, 440);
+  }
+
+  function stepTo(local) {
+    if (!isOpen || closing) return;
+    var sec = SECTIONS[secOf(current)];
+    var p = sec.items[local];
+    if (!p) return;
+
+    current = p.i;
+    dCat.textContent = p.cat;
+    dCount.textContent = pad2(local + 1) + ' / ' + pad2(sec.items.length);
+    buildRail(sec, local);
+
+    var token = ++stepToken;
+
+    dPhoto.style.transition = 'opacity .3s var(--ease-soft)';
+    dPhoto.style.opacity = '0';
+
+    window.setTimeout(function () {
+      if (token !== stepToken || !isOpen) return;
+      dPhoto.src = p.thumb;
+      dPhoto.alt = p.cat + ' — ' + (local + 1);
+      var r = fitRect(p.ar);
+      dPhoto.style.width = r.w + 'px';
+      dPhoto.style.height = r.h + 'px';
+      dPhoto.style.transform = 'translate(' + r.x + 'px,' + r.y + 'px) scale(1,1)';
+      dPhoto.style.transition = 'opacity .45s var(--ease-soft)';
+      swapToFull(p.i);
+      void dPhoto.offsetWidth;
+      dPhoto.style.opacity = '1';
+    }, 300);
+  }
+
+  function step(dir) {
+    if (!isOpen) return;
+    var sec = SECTIONS[secOf(current)];
+    var local = sec.items.indexOf(PHOTOS[current]);
+    var next = local + dir;
+    if (next < 0) next = sec.items.length - 1;
+    if (next >= sec.items.length) next = 0;
+    stepTo(next);
+  }
+
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  /* mark a frame once its image is decoded — also covers the cached case,
+     where `load` can fire before the listener is attached */
+  function bindLoaded(host, img) {
+    function done() { host.classList.add('is-loaded'); }
+    img.addEventListener('load', done);
+    img.addEventListener('error', done);
+    if (img.complete && img.naturalWidth) done();
+  }
+
+  /* ---------------------------------------------------------------- events */
+
+  track.addEventListener('click', function (e) {
+    if (isIntro) return;
+    var cell = e.target.closest('.cell');
+    if (!cell || dragMoved) return;
+    openDetail(Number(cell.dataset.i), cell);
+  });
+
+  track.addEventListener('keydown', function (e) {
+    var cell = e.target.closest('.cell');
+    if (!cell) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openDetail(Number(cell.dataset.i), cell);
+    }
+  });
+
+  /* the big category name is the door into the category page */
+  catName.addEventListener('click', function (e) {
+    e.preventDefault();
+    if (isIntro) return;
+    openCat(focused);
+  });
+
+  grid.addEventListener('click', function (e) {
+    var cell = e.target.closest('.gcell');
+    if (!cell) return;
+    openDetail(Number(cell.dataset.i), cell);
+  });
+
+  dPhoto.addEventListener('click', closeDetail);
+
+  document.getElementById('navClose').addEventListener('click', function (e) {
+    e.preventDefault();
+    if (isOpen) closeDetail();
+    else if (about.classList.contains('is-open')) closeAbout();
+    else closeCat();
+  });
+
+  function goHome() {
+    closeAbout();
+    if (isOpen) dismissDetail();
+    closeCat(true);
+  }
+
+  document.getElementById('navWork').addEventListener('click', function (e) {
+    e.preventDefault();
+    goHome();
+  });
+
+  document.getElementById('brand').addEventListener('click', function (e) {
+    e.preventDefault();
+    goHome();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if (about.classList.contains('is-open')) closeAbout();
+      else if (isOpen) closeDetail();
+      else closeCat();
+    }
+    if (!isOpen) return;
+    if (e.key === 'ArrowRight') step(1);
+    if (e.key === 'ArrowLeft') step(-1);
+  });
+
+  /* preload the large file on hover */
+  var preloaded = {};
+  function preloadFull(el) {
+    var p = PHOTOS[Number(el.dataset.i)];
+    if (!p || preloaded[p.key]) return;
+    preloaded[p.key] = true;
+    var im = new Image();
+    im.src = p.full;
+  }
+  track.addEventListener('mouseover', function (e) {
+    var cell = e.target.closest('.cell');
+    if (cell) preloadFull(cell);
+  });
+  grid.addEventListener('mouseover', function (e) {
+    var cell = e.target.closest('.gcell');
+    if (cell) preloadFull(cell);
+  });
+
+  /* ----------------------------------------------------------------- about */
+
+  function openAbout() {
+    about.classList.add('is-open');
+    about.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('is-about');
+  }
+  function closeAbout() {
+    about.classList.remove('is-open');
+    about.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('is-about');
+  }
+
+  document.getElementById('navAbout').addEventListener('click', function (e) { e.preventDefault(); openAbout(); });
+  document.getElementById('aboutClose').addEventListener('click', closeAbout);
+
+  /* ------------------------------------------------------------------ mode */
+
+  function centerPhoto() {
+    var best = -1;
+    var bd = Infinity;
+    var cs = grid.querySelectorAll('.gcell');
+    for (var i = 0; i < cs.length; i++) {
+      var img = cs[i].querySelector('img');
+      if (!img) continue;
+      var r = img.getBoundingClientRect();
+      if (r.width < 20 || r.right < 40 || r.left > window.innerWidth - 40) continue;
+      var d = Math.abs((r.left + r.width / 2) - window.innerWidth / 2);
+      if (d < bd) { bd = d; best = Number(cs[i].dataset.i); }
+    }
+    return best;
+  }
+
+  modeGrid.addEventListener('click', function () {
+    if (view === 'cat') closeCat();
+    else if (!isMobile() && W) target = Math.round(pos / W) * W;
+  });
+
+  modeFull.addEventListener('click', function () {
+    if (view === 'cat') {
+      var i = centerPhoto();
+      if (i >= 0) openDetail(i, gridCells[i]);
+    } else {
+      openCat(focused);
+    }
+  });
+
+  /* ------------------------------------------------------------------- init */
+
+  buildIndex();
+  measure();
+  setCat(0, true);
+  catAll.textContent = '/' + PHOTOS.length + ' Photos';
+
+  requestAnimationFrame(function () { lastT = performance.now(); });
+  requestAnimationFrame(frame);
+
+  /* ------------------------------------------------------------- opening */
+
+  var intro = document.getElementById('intro');
+  var introPhoto = document.getElementById('introPhoto');
+  var introMark = document.getElementById('introMark');
+  var tilt = document.getElementById('tilt');
+
+  /* the cover name is set as wide as the page, then each letter rolls.
+     one letter = 0.43s (30% slower than before), next one starts 0.22s in,
+     so a full left-to-right pass takes 9 * 0.22 + 0.43 ≈ 2.41s */
+  var COVER_NAME = 'Aric Elliot';
+  var ROLL_DUR = 430;
+  var ROLL_GAP = 220;
+  var ROLL_CYCLE = 9 * ROLL_GAP + ROLL_DUR;
+
+  function fitMark() {
+    introMark.style.fontSize = '100px';
+    var w = introMark.getBoundingClientRect().width;
+    if (!w) return;
+    introMark.style.fontSize = (100 * (window.innerWidth * 1.045) / w) + 'px';
+  }
+
+  function buildMark() {
+    introMark.innerHTML = '';
+    var n = 0;
+    COVER_NAME.split(' ').forEach(function (word) {
+      var wrap = document.createElement('span');
+      wrap.className = 'w';
+      for (var k = 0; k < word.length; k++) {
+        var ch = document.createElement('span');
+        ch.className = 'ch';
+        ch.style.setProperty('--t', (n * ROLL_GAP) + 'ms');
+        ch.innerHTML = '<b><i>' + word[k] + '</i><i>' + word[k] +
+                       '</i><i>' + word[k] + '</i></b>';
+        wrap.appendChild(ch);
+        n++;
+      }
+      introMark.appendChild(wrap);
+    });
+    fitMark();
+  }
+
+  function settleWall() {
+    /* the wall drifts into focus while it unwinds: the soft counterpart
+       to the cover's push toward the viewer */
+    tilt.style.transition =
+      'transform 1.55s cubic-bezier(.16,.84,.24,1), filter 1.2s cubic-bezier(.3,.05,.3,1)';
+    tilt.style.transform = 'translate3d(0,0,0) rotate(0deg) scale(1)';
+    tilt.style.filter = 'blur(0px)';
+    glideBack(1400);
+    revealWall();
+    document.body.classList.remove('is-intro');
+  }
+
+  /* the strip eases back half a loop while the tilt unwinds */
+  function glideBack(dur) {
+    var from = pos;
+    var t0 = performance.now();
+    function step(t) {
+      var p = Math.min(1, (t - t0) / dur);
+      var e = 1 - Math.pow(1 - p, 3.1);
+      pos = target = from * (1 - e);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function endIntro() {
+    if (!isIntro) return;
+    isIntro = false;
+    document.body.classList.remove('is-intro');
+    intro.classList.add('is-out');
+    window.setTimeout(function () { intro.style.display = 'none'; }, 800);
+  }
+
+  var introTimers = [];
+
+  function startRoll() {
+    intro.classList.remove('is-rolling');
+    void intro.offsetWidth;             /* restart the animation cleanly */
+    intro.classList.add('is-rolling');
+  }
+
+  function runIntro() {
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* the wall waits below the fold, slightly turned and out of focus */
+    W && (pos = target = W * 0.55);
+    tilt.style.transform = 'translate3d(-4vw, 16vh, 0) rotate(-4deg) scale(1.05)';
+    tilt.style.filter = 'blur(7px)';
+
+    if (reduced) {
+      tilt.style.transition = 'none';
+      tilt.style.transform = 'none';
+      tilt.style.filter = 'none';
+      revealWall();
+      intro.style.display = 'none';
+      return;
+    }
+
+    isIntro = true;
+    document.body.classList.add('is-intro');
+
+    bindLoaded(introPhoto, introPhoto.querySelector('img'));
+
+    /* two full passes of the letter roll, then the cover leaves upward */
+    startRoll();
+    introTimers.push(window.setTimeout(startRoll, ROLL_CYCLE + 90));
+    introTimers.push(window.setTimeout(function () {
+      intro.classList.add('is-zoom');
+    }, ROLL_CYCLE * 2 + 140));
+    introTimers.push(window.setTimeout(function () {
+      intro.classList.add('is-out');
+      settleWall();
+    }, ROLL_CYCLE * 2 + 300));
+    introTimers.push(window.setTimeout(endIntro, ROLL_CYCLE * 2 + 1750));
+
+    /* impatient visitors can cut the wait short */
+    intro.addEventListener('click', function () {
+      if (!isIntro || intro.classList.contains('is-out')) return;
+      introTimers.forEach(window.clearTimeout);
+      intro.classList.add('is-zoom');
+      intro.classList.add('is-out');
+      settleWall();
+      window.setTimeout(endIntro, 850);
+    });
+  }
+
+  buildMark();
+  runIntro();
+
+  var resizeTimer = 0;
+  window.addEventListener('resize', function () {
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(function () {
+      var prev = W ? pos / W : 0;
+      measure();
+      pos = target = W * prev;
+      if (view === 'cat') sizeGrid();
+      if (isIntro) fitMark();
+    }, 160);
+  });
+})();
+</script>
+</body>
+</html>
