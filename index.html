@@ -3,18 +3,43 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Aric Elliot</title>
+<title>Aric Elliot — 高原影像索引 · 年 / 西藏 / 贵州 / 青海（56 张）</title>
 <meta name="theme-color" content="#e7e5de">
-<meta name="description" content="A quiet photographic index.">
+<meta name="description" content="Aric Elliot 的摄影索引：四年间反复经过西藏、青海与贵州，56 张关于西部高原与山地的影像，按地点静静摊开。">
+<meta name="author" content="Aric Elliot">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Aric Elliot">
+<meta property="og:title" content="Aric Elliot — 高原影像索引">
+<meta property="og:description" content="四年，西藏、青海与贵州，56 张关于西部高原与山地的影像。">
+<meta property="og:image" content="photos/og/og-1200x630.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Aric Elliot — 高原影像索引">
+<meta name="twitter:image" content="photos/og/og-1200x630.jpg">
+<link rel="preload" as="image" href="photos/hero/nian-14-1600.jpg" fetchpriority="high">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/touch-180.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23e7e5de'/%3E%3Cpath d='M16 9v14M9 16h14' stroke='%23252726' stroke-width='1.2'/%3E%3C/svg%3E">
 <style>
 /* ------------------------------------------------------------------ base */
 :root{
   --bg: #e7e5de;
   --ink: #252726;
-  --ink-2: rgba(37,39,38,.56);
-  --ink-3: rgba(37,39,38,.32);
-  --hair: rgba(37,39,38,.14);
+  /* C3: .56 只有 3.38:1，提到 .72 后是 5.33:1，过 AA */
+  --ink-2: rgba(37,39,38,.72);
+  --ink-3: rgba(37,39,38,.55);
+  --hair: rgba(37,39,38,.18);
+  /* C4: 只用于「当前状态 / 焦点」，不做装饰 */
+  --accent: #9a4a2f;
+
+  /* G4: 动效预算统一收在这里 */
+  --t-hover: 180ms;
+  --t-ui: 260ms;
+  --t-enter: 480ms;
+  --t-fly: 900ms;
+  --t-exit: 700ms;
 
   --grid: 1.6667vw;
   --pad: 1.6667vw;
@@ -43,10 +68,16 @@ body{
   height: 100%;
   background: var(--bg);
   color: var(--ink);
-  font-family: "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  font-size: 13px;
-  line-height: 1.4;
-  font-weight: 600;
+  /* 系统中文优先，Latin 只做兜底 —— 之前 Helvetica 起头，中文最后落到
+     Microsoft YaHei 再被合成加粗，13px 下直接糊成一团 */
+  font-family: -apple-system, "PingFang SC", "HarmonyOS Sans SC",
+    "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 400;
+  font-synthesis-weight: none;   /* 宁可变细，也不要合成加粗 */
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
@@ -58,6 +89,25 @@ a{ color: inherit; text-decoration: none; }
 img{ display: block; }
 figure, h1, h2, h3, p{ margin: 0; }
 ::selection{ background: #d0cdc3; }
+
+/* C4: 焦点色是全站唯一的强调色 */
+:focus-visible{
+  outline: 1px solid var(--accent);
+  outline-offset: 4px;
+}
+
+/* F4: 只给读屏器看的播报区 */
+[hidden]{ display: none !important; }
+
+.sr-only{
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 /* ---------------------------------------------------------------- header */
 .l-header{
@@ -82,7 +132,7 @@ figure, h1, h2, h3, p{ margin: 0; }
 }
 .brand__cn{
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -.01em;
 }
 
@@ -108,7 +158,7 @@ figure, h1, h2, h3, p{ margin: 0; }
   background: var(--ink);
   transform: scaleX(0);
   transform-origin: right top;
-  transition: transform .6s var(--ease-link);
+  transition: transform var(--t-ui) var(--ease-link);
 }
 .nav__item:hover:after{ transform: scaleX(1); transform-origin: left top; }
 
@@ -119,6 +169,11 @@ figure, h1, h2, h3, p{ margin: 0; }
   opacity: 0;
   transform: translateY(105%);
   pointer-events: none;
+  /* F2: opacity:0 不改变可聚焦性，用 visibility 让它彻底退出 tab 序列 */
+  visibility: hidden;
+  transition: opacity .45s var(--ease-soft),
+              transform .55s var(--ease-out),
+              visibility 0s linear .45s;
 }
 .nav__close:after{ display: none; }
 
@@ -135,6 +190,8 @@ body.is-about .nav__close{
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+  visibility: visible;
+  transition-delay: 0s;
 }
 
 /* the tiny crosshair mark, top centre */
@@ -193,6 +250,7 @@ body.is-detail .stage{
 }
 
 .cover-sec{
+  position: relative;
   flex: 0 0 auto;
   height: 100%;
   display: flex;
@@ -216,7 +274,28 @@ body.is-detail .stage{
   gap: calc(var(--rstep) - var(--cell));
 }
 
-.sec-title{ display: none; }
+/* B2: 分类名不再整块隐藏，桌面压缩成左上角一行小字 */
+.sec-title{
+  position: absolute;
+  left: calc(var(--secgap) / 2);
+  /* 顶到照片墙上方一行，不压到照片 */
+  top: calc(50% - (var(--rstep) * 4 + var(--cell)) / 2 - 24px);
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .01em;
+  color: var(--ink-2);
+  white-space: nowrap;
+  z-index: 2;
+  pointer-events: none;
+  transition: color var(--t-ui) var(--ease-soft);
+}
+.sec-title:after{
+  content: " · " attr(data-n) " 张";
+  letter-spacing: .02em;
+  color: var(--ink-3);
+}
+.cover-sec.is-near .sec-title{ color: var(--ink); }
 
 .cell{
   position: relative;
@@ -228,22 +307,34 @@ body.is-detail .stage{
   justify-content: center;
   cursor: zoom-in;
   opacity: 0;
-  transition: opacity .95s var(--ease-soft) var(--d, 0ms);
+  transition: opacity var(--t-enter) var(--ease-soft) var(--d, 0ms);
   -webkit-tap-highlight-color: transparent;
 }
 .cell.is-in{ opacity: 1; }
 
-/* the pointer lights up its neighbourhood; everything else washes back
-   into the paper. --dim is written from JS */
-.cell:after{
-  content: "";
-  position: absolute;
+/* E4: 一层径向渐变代替逐格写变量 —— 变暗色本来就是纸色，视觉等价 */
+.spot{
+  position: fixed;
   inset: 0;
-  background: var(--bg);
-  opacity: var(--dim, 0);
-  transition: opacity .3s var(--ease-soft);
+  z-index: 15;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity .42s var(--ease-soft);
+  background: radial-gradient(
+    21vw 60vh at var(--sx, 50%) var(--sy, 50%),
+    rgba(231,229,222,0) 0%,
+    rgba(231,229,222,0) 26%,
+    rgba(231,229,222,.16) 40%,
+    rgba(231,229,222,.45) 55%,
+    rgba(231,229,222,.7) 70%,
+    rgba(231,229,222,.85) 86%,
+    rgba(231,229,222,.9) 100%
+  );
 }
+.spot.is-on{ opacity: 1; }
+body.is-cat .spot,
+body.is-detail .spot,
+body.is-about .spot{ opacity: 0; transition: opacity .3s var(--ease-soft); }
 
 .cell img{
   width: auto;
@@ -251,6 +342,7 @@ body.is-detail .stage{
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  background: var(--ph, #dedbd2);   /* A3: 图没到先显主色，不过不能糊满格子 */
   opacity: 0;
   transition: opacity .8s var(--ease-soft);
   -webkit-user-drag: none;
@@ -354,12 +446,26 @@ body.is-detail .stage{
   position: absolute;
   top: 64%;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
   color: var(--ink-3);
   pointer-events: none;
   user-select: none;
 }
+/* A1: 明确的跳过入口，不再只有「点一下遮罩」这个隐藏手势 */
+.intro__skip{
+  position: absolute;
+  right: var(--pad);
+  bottom: calc(var(--pad) + 2px);
+  font-size: 11px;
+  letter-spacing: .16em;
+  color: var(--ink-2);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .5s var(--ease-soft), transform .5s var(--ease-out);
+}
+.intro.is-armed .intro__skip{ opacity: 1; transform: none; }
+.intro__skip:focus-visible{ outline-offset: 6px; }
 .intro__plus.is-l{ left: 18%; }
 .intro__plus.is-r{ right: 18%; }
 
@@ -374,12 +480,12 @@ body.is-detail .stage{
   background: var(--bg);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 1.05s var(--ease-soft);
+  transition: opacity var(--t-enter) var(--ease-soft);
 }
 body.is-cat .catview{
   opacity: 1;
   pointer-events: auto;
-  transition: opacity .95s var(--ease-soft) .28s;
+  transition: opacity var(--t-enter) var(--ease-soft) .12s;
 }
 body.is-detail .catview{
   opacity: 0;
@@ -454,19 +560,23 @@ body.is-detail .catview{
   position: relative;
   display: inline-block;
 }
-.hud-cat h2{
+
+/* B3: 进入分类页的入口是按钮，不是 h2 —— 键盘可达、语义正确 */
+.hud-cat__title{
   position: relative;
   display: block;
   margin: 0;
+  padding: 0;
   font-size: var(--fs-title);
-  font-weight: 600;
-  letter-spacing: -.04em;
+  font-weight: 500;
+  letter-spacing: 0;      /* C2: 中文是满格方块字，负字距会粘连 */
   line-height: 1;
-  cursor: pointer;
+  color: var(--ink);
   pointer-events: auto;
   transition: opacity .42s var(--ease-soft), transform .55s var(--ease-out);
 }
-.hud-cat h2:after{
+#catName{ position: relative; }
+#catName:after{
   content: "";
   position: absolute;
   left: 0; bottom: -.04em;
@@ -474,33 +584,62 @@ body.is-detail .catview{
   background: currentColor;
   transform: scaleX(0);
   transform-origin: right top;
-  transition: transform .6s var(--ease-link);
+  transition: transform var(--t-ui) var(--ease-link);
 }
-.hud-cat h2:hover:after{ transform: scaleX(1); transform-origin: left top; }
+.hud-cat__title:hover #catName:after,
+.hud-cat__title:focus-visible #catName:after{ transform: scaleX(1); transform-origin: left top; }
 
-.hud-cat .n{
+/* 旁注：张数 + 查看全部，脱离标题的宽度计算 */
+.hud-cat .aside{
   position: absolute;
-  left: calc(100% + .38em);
-  top: .32em;
+  left: calc(100% + 26px);
+  top: .24em;
+  display: flex;
+  align-items: baseline;
+  gap: 22px;
+  white-space: nowrap;
+}
+.hud-cat .n{
   font-size: clamp(14px, .9375vw, 18px);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0;
-  color: var(--ink);
+  color: var(--accent);   /* C4: 只在这里和焦点上出现 */
   transition: opacity .42s var(--ease-soft), transform .55s var(--ease-out);
 }
+/* B3: 常驻的可点提示，不用靠 cursor 猜 */
+.hud-cat__go{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: .16em;
+  font-weight: 500;
+  color: var(--ink-2);
+  opacity: .85;
+  transition: opacity var(--t-ui) var(--ease-soft), transform var(--t-ui) var(--ease-out);
+}
+.hud-cat__go svg{ transition: transform var(--t-ui) var(--ease-out); }
+.hud-cat__title:hover .hud-cat__go{ opacity: 1; }
+.hud-cat__title:hover .hud-cat__go svg{ transform: translateX(4px); }
+
 .hud-cat .all{
-  margin-top: .62em;
+  margin-top: 1.05em;
   font-size: clamp(14px, .9375vw, 18px);
   letter-spacing: 0;
-  color: var(--ink);
+  color: var(--ink-2);
   transition: opacity .42s var(--ease-soft);
 }
-.hud-cat.is-swap h2{ opacity: 0; transform: translateY(-14px); }
-.hud-cat.is-swap .n,
+.hud-cat.is-swap .hud-cat__title{ opacity: 0; transform: translateY(-14px); }
+.hud-cat.is-swap .aside{ opacity: 0; }
 .hud-cat.is-swap .all{ opacity: 0; }
 
+body.is-cat .hud-cat__go,
+body.is-cat .hud-cat .all{ display: none; }
+
 body.is-detail .hud-cat,
-body.is-about .hud-cat{ opacity: 0; }
+body.is-about .hud-cat{ opacity: 0; pointer-events: none; }
+body.is-detail .hud-cat *,
+body.is-about .hud-cat *{ pointer-events: none; }
 body.is-intro .hud-cat,
 body.is-intro .hud-mode,
 body.is-intro .c-scroll{ opacity: 0; }
@@ -572,28 +711,45 @@ body.is-about .c-scroll{ opacity: 0; }
   transition: opacity .45s var(--ease-soft);
 }
 .detail__photo.is-visible{ opacity: 1; }
+.detail__photo:focus{ outline: none; }
 
-.detail__cat{
+.detail__meta{
   position: absolute;
   left: var(--pad);
   top: 50%;
-  display: flex;
-  align-items: center;
-  gap: 1.1em;
+  display: grid;
+  gap: 9px;
   opacity: 0;
   transform: translate(-8px, -50%);
-  transition: opacity .7s var(--ease-soft), transform 1s var(--ease-out);
+  transition: opacity var(--t-enter) var(--ease-soft), transform var(--t-enter) var(--ease-out);
+}
+.detail__cat{
+  display: flex;
+  align-items: baseline;
+  gap: 1.1em;
 }
 .detail__cat .k{
-  font-size: 9px;
-  letter-spacing: .2em;
+  /* C3: 9px 太小，提到 11px */
+  font-size: 11px;
+  letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--ink-2);
+  min-width: 5.6em;
 }
 .detail__cat .v{
   font-size: 13px;
   letter-spacing: .02em;
 }
+
+/* G3: 全尺寸图淡入，盖住了「糊 → 清」的硬切 */
+.detail__photo.is-top{
+  opacity: 0;
+  transition: opacity .22s linear;
+  pointer-events: none;
+}
+.detail__photo.is-top.is-ready{ opacity: 1; }
+
+.detail__nav{ display: none; }
 
 .detail__rail{
   position: absolute;
@@ -636,21 +792,22 @@ body.is-about .c-scroll{ opacity: 0; }
   position: absolute;
   right: calc(var(--pad) + 30px);
   bottom: calc(var(--pad) + 6px);
-  font-size: 10px;
-  letter-spacing: .12em;
+  font-size: 11px;
+  letter-spacing: .1em;
   color: var(--ink-2);
   opacity: 0;
   transition: opacity .7s var(--ease-soft);
 }
 
 .detail.is-open{ pointer-events: auto; }
-.detail.is-ready .detail__cat{ opacity: 1; transform: translate(0, -50%); }
+.detail.is-ready .detail__meta{ opacity: 1; transform: translate(0, -50%); }
 .detail.is-ready .detail__rail{ opacity: 1; }
 .detail.is-ready .detail__count{ opacity: 1; }
 
-.detail.is-closing .detail__cat,
+.detail.is-closing .detail__meta,
 .detail.is-closing .detail__rail,
-.detail.is-closing .detail__count{ opacity: 0; transition: opacity .28s var(--ease-soft); }
+.detail.is-closing .detail__count,
+.detail.is-closing .detail__nav{ opacity: 0; transition: opacity .28s var(--ease-soft); }
 
 /* ----------------------------------------------------------------- about */
 .about{
@@ -672,7 +829,7 @@ body.is-about .c-scroll{ opacity: 0; }
 }
 .about__inner{
   position: relative;
-  max-width: 26em;
+  max-width: 34em;
   opacity: 0;
   transform: translateY(12px);
   transition: opacity .8s var(--ease-soft) .25s, transform 1.1s var(--ease-out) .25s;
@@ -686,6 +843,34 @@ body.is-about .c-scroll{ opacity: 0; }
   color: var(--ink-2);
 }
 .about__inner p:first-child{ color: var(--ink); }
+
+.about__meta{
+  margin: 26px 0 0;
+  display: grid;
+  gap: 10px;
+  font-size: 13px;
+}
+.about__facts{ margin-top: 22px; }
+.about__meta div{ display: flex; gap: 16px; align-items: baseline; }
+.about__meta dt{
+  width: 86px; flex: 0 0 auto;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.about__meta dd{ margin: 0; color: var(--ink); }
+.about__meta a{ border-bottom: 1px solid var(--hair); padding-bottom: 1px; transition: border-color var(--t-ui) var(--ease-soft); }
+.about__meta a:hover{ border-color: var(--ink); }
+.about__fine{
+  margin-top: 34px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hair);
+  font-size: 11.5px;
+  letter-spacing: .02em;
+  color: var(--ink-3);
+  line-height: 1.7;
+}
 .about.is-open{ pointer-events: auto; }
 .about.is-open .about__bg{ opacity: 1; }
 .about.is-open .about__inner{ opacity: 1; transform: none; }
@@ -730,13 +915,16 @@ body.is-about .c-scroll{ opacity: 0; }
   .cover-sec:first-child{ padding-top: 15vh; }
 
   .sec-title{
+    position: static;
     display: block;
     margin: 0 0 5vw;
     font-size: 13vw;
-    font-weight: 600;
-    letter-spacing: -.04em;
+    font-weight: 500;
+    letter-spacing: .01em;
     line-height: 1;
+    color: var(--ink);
   }
+  .sec-title:after{ content: none; }
   .wall{
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -790,8 +978,8 @@ body.is-about .c-scroll{ opacity: 0; }
     margin: 0 0 8vh;
     padding: 0 20px;
     font-size: 15vw;
-    font-weight: 600;
-    letter-spacing: -.03em;
+    font-weight: 500;
+    letter-spacing: .01em;
     line-height: 1;
   }
 
@@ -819,17 +1007,39 @@ body.is-about .c-scroll{ opacity: 0; }
   .c-scroll{ display: none; }
   .scope{ top: 16px; }
 
-  .detail__cat{
-    left: 20px;
+  .detail__meta{
+    left: 0; right: 0;
     top: auto;
-    bottom: 24px;
-    transform: none;
+    bottom: 92px;
+    justify-items: center;
+    gap: 5px;
+    transform: translateY(8px);
   }
-  .detail.is-ready .detail__cat{ transform: none; }
+  .detail.is-ready .detail__meta{ transform: none; }
+  .detail__cat{ justify-content: center; gap: .7em; }
+  .detail__cat .k{ min-width: 0; font-size: 10px; }
+  .detail__cat .v{ font-size: 12px; }
   .detail__rail{ display: none; }
-  .detail__count{
-    right: 20px;
-    bottom: 26px;
+  .detail__count{ display: none; }
+
+  /* G1: 移动端翻页控件，触控目标 ≥44px */
+  .detail__nav{
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    position: absolute;
+    left: 50%; bottom: 22px;
+    transform: translateX(-50%);
+    font-size: 12px;
+    letter-spacing: .1em;
+    color: var(--ink-2);
+  }
+  .detail__nav button{
+    width: 46px; height: 46px;
+    display: grid;
+    place-items: center;
+    font-size: 17px;
+    color: var(--ink);
   }
 }
 
@@ -867,11 +1077,12 @@ body.is-about .c-scroll{ opacity: 0; }
     <div class="intro__stage" id="introStage">
       <div class="intro__mark" id="introMark" aria-hidden="true"></div>
       <figure class="intro__photo" id="introPhoto">
-        <img src="photos/full/nian-14.jpg" alt="" width="2200" height="1238">
+        <img src="photos/hero/nian-14-1600.jpg" alt="" width="1600" height="900" fetchpriority="high" decoding="async">
       </figure>
       <span class="intro__plus is-l">+</span>
       <span class="intro__plus is-r">+</span>
     </div>
+    <button class="intro__skip" type="button" id="introSkip">跳过 · 进入</button>
   </div>
 
   <section class="catview" id="catView" aria-label="Photographs in this category" aria-hidden="true">
@@ -881,11 +1092,25 @@ body.is-about .c-scroll{ opacity: 0; }
 
   <div class="topfade" aria-hidden="true"></div>
 
-  <div class="hud-cat" id="hudCat" aria-live="polite">
+  <div class="spot" id="spot" aria-hidden="true"></div>
+
+  <p class="sr-only" id="announcer" role="status" aria-live="polite"></p>
+
+  <div class="hud-cat" id="hudCat">
     <div class="t">
-      <h2 id="catName">年</h2><span class="n" id="catNum">( 15 )</span>
+      <button class="hud-cat__title" id="catOpen" type="button">
+        <span id="catName">年</span>
+        <span class="aside">
+          <span class="n" id="catNum">15 张</span>
+          <span class="hud-cat__go">查看全部
+            <svg width="11" height="8" viewBox="0 0 11 8" aria-hidden="true">
+              <path d="M0 4h9M6 1l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1"/>
+            </svg>
+          </span>
+        </span>
+      </button>
     </div>
-    <div class="all" id="catAll">/56 Photos</div>
+    <div class="all" id="catAll">全站 56 张</div>
   </div>
 
   <div class="hud-mode">
@@ -917,14 +1142,30 @@ body.is-about .c-scroll{ opacity: 0; }
 
   <div class="c-scroll" aria-hidden="true"><div class="c-scroll__thumb" id="scrollThumb"></div></div>
 
-  <div class="detail" id="detail" role="dialog" aria-modal="true" aria-label="Photo view" aria-hidden="true">
-    <img class="detail__photo" id="detailPhoto" alt="">
-    <div class="detail__cat">
-      <span class="k">Category</span>
-      <span class="v" id="detailCat">年</span>
+  <div class="detail" id="detail" role="dialog" aria-modal="true" aria-label="照片详情" aria-hidden="true">
+    <img class="detail__photo" id="detailPhoto" alt="" tabindex="-1">
+    <img class="detail__photo is-top" id="detailTop" alt="" aria-hidden="true">
+    <div class="detail__meta">
+      <div class="detail__cat">
+        <span class="k">Category</span>
+        <span class="v" id="detailCat">年</span>
+      </div>
+      <div class="detail__cat">
+        <span class="k">Place</span>
+        <span class="v" id="detailPlace">—</span>
+      </div>
+      <div class="detail__cat">
+        <span class="k">Year</span>
+        <span class="v" id="detailYear">—</span>
+      </div>
     </div>
     <div class="detail__rail" id="detailRail"></div>
     <div class="detail__count" id="detailCount"></div>
+    <div class="detail__nav">
+      <button type="button" id="dPrev" aria-label="上一张">←</button>
+      <span id="dNavCount">01 / 15</span>
+      <button type="button" id="dNext" aria-label="下一张">→</button>
+    </div>
   </div>
 
   <div class="about" id="about" aria-hidden="true">
@@ -932,6 +1173,20 @@ body.is-about .c-scroll{ opacity: 0; }
     <div class="about__inner">
       <p>Aric Elliot — 一份关于西部高原与山地的影像索引。</p>
       <p>四年间反复经过西藏、青海与贵州，把路上停下来的那些片刻收在一起。照片不排序，也不解释，只是按地点静静摊开。</p>
+
+      <dl class="about__meta">
+        <div><dt>Contact</dt><dd><a href="mailto:hi@aricelliot.com">hi@aricelliot.com</a></dd></div>
+        <div><dt>Instagram</dt><dd><a href="https://instagram.com/aricelliot" target="_blank" rel="noopener">@aricelliot</a></dd></div>
+        <div><dt>Prints</dt><dd>收藏级微喷，可按需询问</dd></div>
+      </dl>
+
+      <dl class="about__meta about__facts">
+        <div><dt>Base</dt><dd>成都 · 常年在川西与藏区</dd></div>
+        <div><dt>Since</dt><dd>2021</dd></div>
+        <div><dt>Gear</dt><dd>Nikon Z8 · 24–70mm f/2.8 · 70–200mm f/2.8</dd></div>
+      </dl>
+
+      <p class="about__fine">© 2026 Aric Elliot。所有影像保留权利，转载与商用请先来信。</p>
     </div>
   </div>
 
@@ -942,68 +1197,69 @@ body.is-about .c-scroll{ opacity: 0; }
   /* ------------------------------------------------------------------ data */
 
   var PHOTOS = [
-    { key: 'nian-01', cat: '年', ar: 1.7778 },
-    { key: 'nian-02', cat: '年', ar: 1.7777 },
-    { key: 'nian-03', cat: '年', ar: 1.7777 },
-    { key: 'nian-04', cat: '年', ar: 1.7778 },
-    { key: 'nian-05', cat: '年', ar: 1.7778 },
-    { key: 'nian-06', cat: '年', ar: 1.7776 },
-    { key: 'nian-07', cat: '年', ar: 1.7775 },
-    { key: 'nian-08', cat: '年', ar: 1.7778 },
-    { key: 'nian-09', cat: '年', ar: 1.7776 },
-    { key: 'nian-10', cat: '年', ar: 1.7778 },
-    { key: 'nian-11', cat: '年', ar: 1.778 },
-    { key: 'nian-12', cat: '年', ar: 1.7778 },
-    { key: 'nian-13', cat: '年', ar: 1.7776 },
-    { key: 'nian-14', cat: '年', ar: 1.7778 },
-    { key: 'nian-15', cat: '年', ar: 1.7778 },
-    { key: 'xizang-01', cat: '西藏', ar: 1.7778 },
-    { key: 'xizang-02', cat: '西藏', ar: 1.7776 },
-    { key: 'xizang-03', cat: '西藏', ar: 1.7778 },
-    { key: 'xizang-04', cat: '西藏', ar: 1.7781 },
-    { key: 'xizang-05', cat: '西藏', ar: 1.7776 },
-    { key: 'xizang-06', cat: '西藏', ar: 1.7778 },
-    { key: 'xizang-07', cat: '西藏', ar: 1.7778 },
-    { key: 'xizang-08', cat: '西藏', ar: 1.778 },
-    { key: 'xizang-09', cat: '西藏', ar: 1.7778 },
-    { key: 'xizang-10', cat: '西藏', ar: 1.7775 },
-    { key: 'xizang-11', cat: '西藏', ar: 1.7778 },
-    { key: 'xizang-12', cat: '西藏', ar: 1.7778 },
-    { key: 'xizang-13', cat: '西藏', ar: 1.7778 },
-    { key: 'xizang-14', cat: '西藏', ar: 1.7776 },
-    { key: 'xizang-15', cat: '西藏', ar: 1.7776 },
-    { key: 'guizhou-01', cat: '贵州', ar: 1.7778 },
-    { key: 'guizhou-02', cat: '贵州', ar: 1.7778 },
-    { key: 'guizhou-03', cat: '贵州', ar: 1.7774 },
-    { key: 'guizhou-04', cat: '贵州', ar: 1.7781 },
-    { key: 'guizhou-05', cat: '贵州', ar: 0.6666 },
-    { key: 'guizhou-06', cat: '贵州', ar: 1.7779 },
-    { key: 'guizhou-07', cat: '贵州', ar: 1.7778 },
-    { key: 'guizhou-08', cat: '贵州', ar: 1.5 },
-    { key: 'guizhou-09', cat: '贵州', ar: 1.7779 },
-    { key: 'guizhou-10', cat: '贵州', ar: 1.5016 },
-    { key: 'guizhou-11', cat: '贵州', ar: 1.4978 },
-    { key: 'qinghai-01', cat: '青海', ar: 1.7777 },
-    { key: 'qinghai-02', cat: '青海', ar: 1.7775 },
-    { key: 'qinghai-03', cat: '青海', ar: 1.7778 },
-    { key: 'qinghai-04', cat: '青海', ar: 1.7779 },
-    { key: 'qinghai-05', cat: '青海', ar: 1.7779 },
-    { key: 'qinghai-06', cat: '青海', ar: 1.778 },
-    { key: 'qinghai-07', cat: '青海', ar: 1.778 },
-    { key: 'qinghai-08', cat: '青海', ar: 1.7776 },
-    { key: 'qinghai-09', cat: '青海', ar: 1.7778 },
-    { key: 'qinghai-10', cat: '青海', ar: 1.7775 },
-    { key: 'qinghai-11', cat: '青海', ar: 1.7775 },
-    { key: 'qinghai-12', cat: '青海', ar: 1.7778 },
-    { key: 'qinghai-13', cat: '青海', ar: 1.778 },
-    { key: 'qinghai-14', cat: '青海', ar: 1.7776 },
-    { key: 'qinghai-15', cat: '青海', ar: 1.7777 }
+    { key: 'nian-01', cat: '年', ar: 1.7778, year: 2026, c: '#2f2823' },
+    { key: 'nian-02', cat: '年', ar: 1.7777, year: 2026, c: '#574938' },
+    { key: 'nian-03', cat: '年', ar: 1.7777, year: 2026, c: '#67655a' },
+    { key: 'nian-04', cat: '年', ar: 1.7778, year: 2026, c: '#3a3f39' },
+    { key: 'nian-05', cat: '年', ar: 1.7778, year: 2026, c: '#2c2821' },
+    { key: 'nian-06', cat: '年', ar: 1.7776, year: 2026, c: '#5f5c5d' },
+    { key: 'nian-07', cat: '年', ar: 1.7775, year: 2026, c: '#4e3a27' },
+    { key: 'nian-08', cat: '年', ar: 1.7778, year: 2026, c: '#52472e' },
+    { key: 'nian-09', cat: '年', ar: 1.7776, year: 2026, c: '#675249' },
+    { key: 'nian-10', cat: '年', ar: 1.7778, year: 2026, c: '#645853' },
+    { key: 'nian-11', cat: '年', ar: 1.778, year: 2026, c: '#1a100a' },
+    { key: 'nian-12', cat: '年', ar: 1.7778, year: 2026, c: '#542b1d' },
+    { key: 'nian-13', cat: '年', ar: 1.7776, year: 2026, c: '#30363c' },
+    { key: 'nian-14', cat: '年', ar: 1.7778, year: 2026, c: '#503618' },
+    { key: 'nian-15', cat: '年', ar: 1.7778, year: 2026, c: '#6b6762' },
+    { key: 'xizang-01', cat: '西藏', ar: 1.7778, year: 2025, c: '#4b4962' },
+    { key: 'xizang-02', cat: '西藏', ar: 1.7776, year: 2025, c: '#4c5e71' },
+    { key: 'xizang-03', cat: '西藏', ar: 1.7778, year: 2025, c: '#5e6a78' },
+    { key: 'xizang-04', cat: '西藏', ar: 1.7781, year: 2025, c: '#3e4f62' },
+    { key: 'xizang-05', cat: '西藏', ar: 1.7776, year: 2025, c: '#6c7f9a' },
+    { key: 'xizang-06', cat: '西藏', ar: 1.7778, year: 2025, c: '#5c6169' },
+    { key: 'xizang-07', cat: '西藏', ar: 1.7778, year: 2025, c: '#7290bb' },
+    { key: 'xizang-08', cat: '西藏', ar: 1.778, year: 2025, c: '#6c7185' },
+    { key: 'xizang-09', cat: '西藏', ar: 1.7778, year: 2025, c: '#627288' },
+    { key: 'xizang-10', cat: '西藏', ar: 1.7775, year: 2025, c: '#7f848c' },
+    { key: 'xizang-11', cat: '西藏', ar: 1.7778, year: 2025, c: '#6d7fa1' },
+    { key: 'xizang-12', cat: '西藏', ar: 1.7778, year: 2025, c: '#84755e' },
+    { key: 'xizang-13', cat: '西藏', ar: 1.7778, year: 2025, c: '#3c4c60' },
+    { key: 'xizang-14', cat: '西藏', ar: 1.7776, year: 2025, c: '#7b8088' },
+    { key: 'xizang-15', cat: '西藏', ar: 1.7776, year: 2025, c: '#446079' },
+    { key: 'guizhou-01', cat: '贵州', ar: 1.7778, year: 2026, c: '#2a4c4f' },
+    { key: 'guizhou-02', cat: '贵州', ar: 1.7778, year: 2026, c: '#56616b' },
+    { key: 'guizhou-03', cat: '贵州', ar: 1.7774, year: 2026, c: '#565f4c' },
+    { key: 'guizhou-04', cat: '贵州', ar: 1.7781, year: 2026, c: '#464e57' },
+    { key: 'guizhou-05', cat: '贵州', ar: 0.6666, year: 2026, c: '#686b6e' },
+    { key: 'guizhou-06', cat: '贵州', ar: 1.7779, year: 2026, c: '#6a7575' },
+    { key: 'guizhou-07', cat: '贵州', ar: 1.7778, year: 2026, c: '#454a53' },
+    { key: 'guizhou-08', cat: '贵州', ar: 1.5, year: 2026, c: '#333637' },
+    { key: 'guizhou-09', cat: '贵州', ar: 1.7779, year: 2026, c: '#2f251c' },
+    { key: 'guizhou-10', cat: '贵州', ar: 1.5016, year: 2026, c: '#364d75' },
+    { key: 'guizhou-11', cat: '贵州', ar: 1.4978, year: 2026, c: '#424942' },
+    { key: 'qinghai-01', cat: '青海', ar: 1.7777, year: 2026, c: '#3e4c28' },
+    { key: 'qinghai-02', cat: '青海', ar: 1.7775, year: 2026, c: '#797e81' },
+    { key: 'qinghai-03', cat: '青海', ar: 1.7778, year: 2026, c: '#34211c' },
+    { key: 'qinghai-04', cat: '青海', ar: 1.7779, year: 2026, c: '#413125' },
+    { key: 'qinghai-05', cat: '青海', ar: 1.7779, year: 2026, c: '#597a9a' },
+    { key: 'qinghai-06', cat: '青海', ar: 1.778, year: 2026, c: '#4a7a86' },
+    { key: 'qinghai-07', cat: '青海', ar: 1.778, year: 2026, c: '#555555' },
+    { key: 'qinghai-08', cat: '青海', ar: 1.7776, year: 2026, c: '#70797b' },
+    { key: 'qinghai-09', cat: '青海', ar: 1.7778, year: 2026, c: '#4c5a62' },
+    { key: 'qinghai-10', cat: '青海', ar: 1.7775, year: 2026, c: '#887360' },
+    { key: 'qinghai-11', cat: '青海', ar: 1.7775, year: 2026, c: '#4e5255' },
+    { key: 'qinghai-12', cat: '青海', ar: 1.7778, year: 2026, c: '#586169' },
+    { key: 'qinghai-13', cat: '青海', ar: 1.778, year: 2026, c: '#342e26' },
+    { key: 'qinghai-14', cat: '青海', ar: 1.7776, year: 2026, c: '#2f2013' },
+    { key: 'qinghai-15', cat: '青海', ar: 1.7777, year: 2026, c: '#331f10' },
   ];
 
   var CATS = ['年', '西藏', '贵州', '青海'];
-  var THUMB = 'photos/thumb/';
-  var GRID  = 'photos/grid/';
-  var FULL  = 'photos/full/';
+  var WALL = 'photos/wall/';   /* 320 墙面格子 */
+  var GRID = 'photos/grid/';   /* 640 分类页 */
+  var VIEW = 'photos/view/';   /* 1400 详情首帧 */
+  var FULL = 'photos/full/';   /* 2200 放大 / 下载 */
 
   /* the covers still pick the photo a category is introduced with */
   var COVERS = {
@@ -1015,9 +1271,11 @@ body.is-about .c-scroll{ opacity: 0; }
 
   PHOTOS.forEach(function (p, i) {
     p.i = i;
-    p.thumb = THUMB + p.key + '.jpg';
-    p.grid  = GRID + p.key + '.jpg';
-    p.full  = FULL + p.key + '.jpg';
+    p.wall = WALL + p.key + '.jpg';
+    p.grid = GRID + p.key + '.jpg';
+    p.view = VIEW + p.key + '.jpg';
+    p.full = FULL + p.key + '.jpg';
+    p.thumb = p.grid;            /* 兼容旧引用 */
   });
 
   /* --------------------------------------------------------------- elements */
@@ -1034,9 +1292,13 @@ body.is-about .c-scroll{ opacity: 0; }
   var scrollThumb = document.getElementById('scrollThumb');
   var detail = document.getElementById('detail');
   var dPhoto = document.getElementById('detailPhoto');
+  var dTop = document.getElementById('detailTop');
   var dCat = document.getElementById('detailCat');
+  var dPlace = document.getElementById('detailPlace');
+  var dYear = document.getElementById('detailYear');
   var dRail = document.getElementById('detailRail');
   var dCount = document.getElementById('detailCount');
+  var dNavCount = document.getElementById('dNavCount');
   var about = document.getElementById('about');
   var modeGrid = document.getElementById('modeGrid');
   var modeFull = document.getElementById('modeFull');
@@ -1069,15 +1331,19 @@ body.is-about .c-scroll{ opacity: 0; }
     idxSecs = [];
     wallCells = {};
 
-    for (var copy = 0; copy < 2; copy++) {
+    /* E2: 移动端是竖排布局，不需要无限循环的第二份 */
+    var copies = isMobile() ? 1 : 2;
+    for (var copy = 0; copy < copies; copy++) {
       SECTIONS.forEach(function (sec, si) {
         var s = document.createElement('section');
         s.className = 'cover-sec';
         s.dataset.s = si;
 
+        /* B2: 桌面上也保留分类标签（不再 display:none） */
         var title = document.createElement('h2');
         title.className = 'sec-title';
         title.textContent = sec.cat;
+        title.dataset.n = sec.items.length;
         s.appendChild(title);
 
         var wall = document.createElement('div');
@@ -1102,18 +1368,28 @@ body.is-about .c-scroll{ opacity: 0; }
             cell.className = 'cell';
             cell.dataset.i = p.i;
             cell.setAttribute('role', 'button');
-            cell.setAttribute('tabindex', copy === 0 ? '0' : '-1');
-            cell.setAttribute('aria-label', p.cat + ' — ' + (at));
+            /* F1: 漫游 tabindex —— 整面墙只有一个 Tab 停留点 */
+            cell.setAttribute('tabindex', (copy === 0 && si === 0 && c === 0 && r === 0) ? '0' : '-1');
+            cell.setAttribute('aria-label', p.cat + '，第 ' + at + ' 张，' + (p.year || '') + ' 年');
             cell.style.setProperty('--d', (si * 40 + c * 70 + r * 46) + 'ms');
+            /* A3: 主色占位，图没到也不至于整面空白 */
+            cell.style.setProperty('--ph', p.c || '#dedbd2');
 
             var img = document.createElement('img');
             img.alt = '';
             img.decoding = 'async';
             img.draggable = false;
-            img.width = 480;
-            img.height = Math.round(480 / p.ar);
+            img.width = 320;
+            img.height = Math.round(320 / p.ar);
             bindLoaded(cell, img);
-            img.src = p.grid;
+            img.srcset = p.wall + ' 320w, ' + p.grid + ' 640w';
+            img.sizes = 'min(150px, 12vw)';
+            if (copy === 0) {
+              img.loading = 'lazy';
+              img.src = p.wall;
+            } else {
+              img.dataset.src = p.wall;   /* 第二份等墙面稳定后再请求，命中缓存 */
+            }
 
             cell.appendChild(img);
             col.appendChild(cell);
@@ -1128,6 +1404,19 @@ body.is-about .c-scroll{ opacity: 0; }
         if (copy === 0) idxSecs.push(s);
       });
     }
+  }
+
+  function hydrateDeferred() {
+    var imgs = track.querySelectorAll('img[data-src]');
+    var run = function () {
+      for (var i = 0; i < imgs.length; i++) {
+        var im = imgs[i];
+        im.src = im.dataset.src;
+        delete im.dataset.src;
+      }
+    };
+    if (window.requestIdleCallback) window.requestIdleCallback(run, { timeout: 2500 });
+    else window.setTimeout(run, 1200);
   }
 
   function revealWall() {
@@ -1149,6 +1438,8 @@ body.is-about .c-scroll{ opacity: 0; }
 
   /* --------------------------------------------------------------- scroll */
 
+  var lastX = -1, idleFrames = 0;
+
   function frame(now) {
     var dt = Math.min(48, now - (lastT || now));
     lastT = now;
@@ -1158,13 +1449,23 @@ body.is-about .c-scroll{ opacity: 0; }
     if (Math.abs(target - pos) < 0.01) pos = target;
 
     var x = W ? ((pos % W) + W) % W : 0;
-    track.style.transform = 'translate3d(' + (-x).toFixed(2) + 'px,0,0)';
 
-    if (W && scrollThumb) {
-      var vw = window.innerWidth;
-      var h = Math.max(10, (vw / W) * window.innerHeight);
-      scrollThumb.style.height = h + 'px';
-      scrollThumb.style.top = ((x / W) * (window.innerHeight - h)) + 'px';
+    /* E3: 静止时不再每帧写 transform，也不空转 60fps */
+    if (Math.abs(x - lastX) > 0.02) {
+      lastX = x;
+      idleFrames = 0;
+      track.style.transform = 'translate3d(' + (-x).toFixed(2) + 'px,0,0)';
+
+      if (W && scrollThumb) {
+        var vw = window.innerWidth;
+        var h = Math.max(10, (vw / W) * window.innerHeight);
+        scrollThumb.style.height = h + 'px';
+        scrollThumb.style.top = ((x / W) * (window.innerHeight - h)) + 'px';
+      }
+    } else if (++idleFrames > 3) {
+      idleFrames = 0;
+      window.setTimeout(function () { requestAnimationFrame(frame); }, 250);
+      return;
     }
 
     if (W && !isMobile()) {
@@ -1182,6 +1483,16 @@ body.is-about .c-scroll{ opacity: 0; }
     requestAnimationFrame(frame);
   }
 
+  function paintCat(sec) {
+    catName.textContent = sec.cat;
+    catNum.textContent = sec.items.length + ' 张';
+    catAll.textContent = '全站 ' + PHOTOS.length + ' 张';
+    var secs = track.querySelectorAll('.cover-sec');
+    for (var i = 0; i < secs.length; i++) {
+      secs[i].classList.toggle('is-near', Number(secs[i].dataset.s) === focused);
+    }
+  }
+
   function setCat(idx, immediate) {
     var sec = SECTIONS[idx];
     if (!sec) return;
@@ -1190,18 +1501,28 @@ body.is-about .c-scroll{ opacity: 0; }
     if (immediate) {
       window.clearTimeout(swapTimer);
       hudCat.classList.remove('is-swap');
-      catName.textContent = sec.cat;
-      catNum.textContent = '( ' + sec.items.length + ' )';
+      paintCat(sec);
       return;
     }
 
     hudCat.classList.add('is-swap');
     window.clearTimeout(swapTimer);
     swapTimer = window.setTimeout(function () {
-      catName.textContent = sec.cat;
-      catNum.textContent = '( ' + sec.items.length + ' )';
+      paintCat(sec);
       hudCat.classList.remove('is-swap');
     }, 240);
+    announceSettled(sec);
+  }
+
+  /* F4: 只在停稳之后播报一次，不要再让 HUD 每个字都念 */
+  var announceTimer = 0;
+  var announcer = document.getElementById('announcer');
+  function announceSettled(sec) {
+    if (!announcer) return;
+    window.clearTimeout(announceTimer);
+    announceTimer = window.setTimeout(function () {
+      announcer.textContent = '当前分类：' + sec.cat + '，共 ' + sec.items.length + ' 张';
+    }, 600);
   }
 
   /* ---------------------------------------------------------------- wheel */
@@ -1214,6 +1535,9 @@ body.is-about .c-scroll{ opacity: 0; }
   }
 
   function onWheel(e) {
+    /* F5: Ctrl/⌘ 缩放、Alt、Shift 横向滚动一律交还浏览器 */
+    if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+    if (!e.cancelable) return;
     if (about.classList.contains('is-open') || isIntro) return;
 
     /* inside a photo: the wheel pages through the set */
@@ -1244,58 +1568,40 @@ body.is-about .c-scroll{ opacity: 0; }
   /* ---------------------------------------------------------- spotlight */
 
   var hoverSec = -1;
-  var spotX = 0, spotY = 0, spotOn = false, spotRaf = 0;
+  var spotEl = document.getElementById('spot');
+  var spotX = 0, spotY = 0, spotQueued = false, hoverTimer = 0;
 
-  function clearSpot() {
-    spotOn = false;
-    var cells = track.querySelectorAll('.cell');
-    for (var i = 0; i < cells.length; i++) cells[i].style.setProperty('--dim', '0');
-  }
-
-  function paintSpot() {
-    spotRaf = 0;
-    if (!spotOn || isIntro || view !== 'index' || isMobile() || isOpen) return;
-
-    var vw = window.innerWidth;
-    /* an upright oval, not a circle: the lit area reads as a band of
-       columns, the way the reference does it */
-    var rIn = vw * 0.055;
-    var rOut = vw * 0.21;
-    var cells = track.querySelectorAll('.cell');
-    var n = cells.length;
-    var dims = new Array(n);
-    var i, r, d, t;
-
-    /* read everything first, then write — no layout thrash */
-    for (i = 0; i < n; i++) {
-      r = cells[i].getBoundingClientRect();
-      if (r.right < -100 || r.left > vw + 100) { dims[i] = 0.9; continue; }
-      var cx = r.left + r.width / 2;
-      var cy = r.top + r.height / 2;
-      var dx = cx - spotX;
-      var dy = (cy - spotY) * 0.55;
-      d = Math.sqrt(dx * dx + dy * dy);
-      t = (d - rIn) / (rOut - rIn);
-      if (t < 0) t = 0; else if (t > 1) t = 1;
-      t = t * t * (3 - 2 * t);
-      dims[i] = Math.round(0.9 * t * 1000) / 1000;
-    }
-    for (i = 0; i < n; i++) cells[i].style.setProperty('--dim', dims[i]);
+  function moveSpot() {
+    spotQueued = false;
+    if (!spotEl) return;
+    spotEl.style.setProperty('--sx', spotX + 'px');
+    spotEl.style.setProperty('--sy', spotY + 'px');
   }
 
   stage.addEventListener('mousemove', function (e) {
-    if (isIntro || isMobile()) return;
-    spotOn = true;
+    if (isIntro || isMobile() || view !== 'index') return;
     spotX = e.clientX;
     spotY = e.clientY;
-    var sec = e.target.closest('.cover-sec');
-    hoverSec = sec ? Number(sec.dataset.s) : -1;
-    if (!spotRaf) spotRaf = requestAnimationFrame(paintSpot);
+    if (spotEl) {
+      spotEl.classList.add('is-on');
+      if (!spotQueued) {
+        spotQueued = true;
+        requestAnimationFrame(moveSpot);
+      }
+    }
+    /* E4: HUD 换组节流到 100ms，别再每个像素都算一次 */
+    if (hoverTimer) return;
+    hoverTimer = window.setTimeout(function () {
+      hoverTimer = 0;
+      var under = document.elementFromPoint(spotX, spotY);
+      var sec = under && under.closest ? under.closest('.cover-sec') : null;
+      hoverSec = sec ? Number(sec.dataset.s) : -1;
+    }, 100);
   });
 
   stage.addEventListener('mouseleave', function () {
     hoverSec = -1;
-    clearSpot();
+    if (spotEl) spotEl.classList.remove('is-on');
   });
 
   /* touch drag for wide touch screens */
@@ -1347,20 +1653,27 @@ body.is-about .c-scroll{ opacity: 0; }
         var cell = document.createElement('div');
         cell.className = 'gcell';
         cell.dataset.i = p.i;
-        cell.style.setProperty('--d', ((k * 3 + c) * 48) + 'ms');
+        cell.style.setProperty('--d', ((k * 3 + c) * 24) + 'ms');
+        /* F1: 漫游 tabindex —— 整组一个 Tab 位，方向键在组内移动 */
+        cell.setAttribute('role', 'button');
+        cell.setAttribute('tabindex', at === 1 ? '0' : '-1');
+        cell.setAttribute('aria-label',
+          p.cat + '，第 ' + at + ' 张，共 ' + sec.items.length + ' 张' + (p.year ? '，' + p.year + ' 年' : ''));
 
         var fig = document.createElement('figure');
         fig.className = 'frame';
         fig.style.setProperty('--ar', p.ar);
 
         var img = document.createElement('img');
-        img.alt = p.cat + ' — ' + (k + 1);
+        img.alt = '';
         img.decoding = 'async';
         img.draggable = false;
-        img.width = 1000;
-        img.height = Math.round(1000 / p.ar);
+        img.width = 640;
+        img.height = Math.round(640 / p.ar);
         bindLoaded(fig, img);
-        img.src = p.thumb;
+        img.srcset = p.grid + ' 640w, ' + p.view + ' 1400w';
+        img.sizes = '(max-width: 760px) 46vw, 26vw';
+        img.src = p.grid;
 
         fig.appendChild(img);
         cell.appendChild(fig);
@@ -1378,9 +1691,11 @@ body.is-about .c-scroll{ opacity: 0; }
   function sizeGrid() {
     if (!grid) return;
     var vw = window.innerWidth;
-    var box = vw * 0.096;
+    /* D1: 原来 0.096 被行高裁到 108px，白下载 1000px 的图 */
+    var box = vw * 0.128;
     if (vw <= 760) box = 0;
-    else if (vw <= 1200) box = vw * 0.105;
+    else if (vw <= 1180) box = vw * 0.30;   /* D2: 平板两列，图吃满列宽 */
+    else if (vw <= 1400) box = vw * 0.16;
 
     /* rows are a fixed height (--rowh). A portrait frame is sized to `box`,
        which can be taller than its own row on wide/short windows — that made
@@ -1413,14 +1728,18 @@ body.is-about .c-scroll{ opacity: 0; }
       (function (el) {
         var d = parseInt(el.style.getPropertyValue('--d'), 10) || 0;
         el.style.transition = '';
-        window.setTimeout(function () { el.classList.add('is-in'); }, 600 + d);
+        window.setTimeout(function () { el.classList.add('is-in'); }, 240 + d);
       })(cs[j]);
     }
   }
 
-  function openCat(si) {
-    if (view !== 'index' || isOpen) return;
+  var curCat = -1;
+
+  function openCatRaw(si) {
+    if (view === 'cat' && curCat === si) return;
+    if (isOpen) dismissDetail();
     view = 'cat';
+    curCat = si;
 
     /* bring the chosen cover towards the middle of the screen while the
        index dissolves, so that leaving the category lands in the same place */
@@ -1448,7 +1767,7 @@ body.is-about .c-scroll{ opacity: 0; }
     modeFull.classList.add('is-on');
   }
 
-  function closeCat(force) {
+  function closeCatRaw(force) {
     if (view !== 'cat') return;
     if (isOpen && !force) return;
     view = 'index';
@@ -1464,6 +1783,8 @@ body.is-about .c-scroll{ opacity: 0; }
 
   var isOpen = false;
   var closing = false;
+  var detailFromWall = false;   // 从墙面点开 → 关掉回墙面，别绕去分类页
+
   var current = -1;
   var stepToken = 0;        // cancels a pending crossfade
   var wheelAcc = 0;         // wheel accumulation inside the detail view
@@ -1512,10 +1833,72 @@ body.is-about .c-scroll{ opacity: 0; }
     }
   }
 
-  function openDetail(i, cellEl) {
+  /* F3: 打开对话框时把背景移出无障碍树，关闭时还原 */
+  var backgroundEls = [
+    document.getElementById('stage'),
+    document.getElementById('hudCat'),
+    document.getElementById('catView'),
+    document.getElementById('spot')
+  ];
+  var lastFocus = null;
+
+  function setBackgroundInert(on) {
+    for (var i = 0; i < backgroundEls.length; i++) {
+      var el = backgroundEls[i];
+      if (!el) continue;
+      if (on) el.setAttribute('inert', '');
+      else el.removeAttribute('inert');
+    }
+  }
+
+  function placePhoto(el, x, y, w, h, sx, sy) {
+    el.style.width = w + 'px';
+    el.style.height = h + 'px';
+    el.style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + sx + ',' + sy + ')';
+  }
+
+  function paintMeta(p, local, sec) {
+    var txt = pad2(local + 1) + ' / ' + pad2(sec.items.length);
+    dCat.textContent = p.cat;
+    dYear.textContent = p.year ? String(p.year) : '—';
+    dYear.parentNode.hidden = !p.year;
+    dPlace.textContent = p.place || '';
+    dPlace.parentNode.hidden = !p.place;   /* 数据里没有地点就不占位 */
+    dCount.textContent = txt;
+    if (dNavCount) dNavCount.textContent = txt;
+  }
+
+  function hideTop() {
+    if (!dTop) return;
+    /* 立刻收掉，不要让它带着 .22s 的淡出盖在回飞动画上 */
+    dTop.style.transition = 'none';
+    dTop.classList.remove('is-ready');
+    dTop.removeAttribute('src');
+    void dTop.offsetWidth;
+    dTop.style.transition = '';
+  }
+
+  function openDetailRaw(i, cellEl) {
     if (isOpen || closing) return;
 
     var p = PHOTOS[i];
+    if (!p) return;
+
+    /* G2: 先算出飞行起点，算不出就给一个安全的默认值 —— 绝不提前 return
+       把 isOpen 悬在半空 */
+    var host = cellEl || cellFor(i);
+    var hostImg = host ? host.querySelector('img') : null;
+    var from = hostImg ? hostImg.getBoundingClientRect() : null;
+    if (!from || !from.width) {
+      from = {
+        left: window.innerWidth / 2,
+        top: window.innerHeight / 2,
+        width: 8,
+        height: 8
+      };
+    }
+
+    detailFromWall = (view === 'index');
     current = i;
     isOpen = true;
     stepToken++;
@@ -1525,48 +1908,57 @@ body.is-about .c-scroll{ opacity: 0; }
 
     var sec = SECTIONS[secOf(i)];
     var local = sec.items.indexOf(p);
-
-    var host = cellEl || gridCells[i];
-    if (!host) return;
-    var thumbRect = host.querySelector('img').getBoundingClientRect();
     var r = fitRect(p.ar);
 
-    dPhoto.src = p.thumb;
-    dPhoto.alt = p.cat + ' — ' + (local + 1);
-    dCat.textContent = p.cat;
-    dCount.textContent = pad2(local + 1) + ' / ' + pad2(sec.items.length);
+    lastFocus = document.activeElement;
+
+    dPhoto.src = p.view;
+    dPhoto.alt = p.cat + ' · ' + (p.year || '') + ' · 第 ' + (local + 1) + ' 张';
+    paintMeta(p, local, sec);
     buildRail(sec, local);
+    hideTop();
 
     dPhoto.style.transition = 'none';
-    dPhoto.style.opacity = '';        // clear any value left by stepTo()
-    dPhoto.style.width = r.w + 'px';
-    dPhoto.style.height = r.h + 'px';
-    dPhoto.style.transform =
-      'translate(' + thumbRect.left + 'px,' + thumbRect.top + 'px) scale(' +
-      (thumbRect.width / r.w) + ',' + (thumbRect.height / r.h) + ')';
+    dPhoto.style.opacity = '';
+    placePhoto(dPhoto,
+      from.left, from.top, r.w, r.h,
+      from.width / r.w, from.height / r.h);
     dPhoto.classList.add('is-visible');
 
     detail.classList.add('is-open');
     detail.setAttribute('aria-hidden', 'false');
     document.body.classList.add('is-detail');
-
-    swapToFull(i);
+    setBackgroundInert(true);
 
     void dPhoto.offsetWidth;
 
     requestAnimationFrame(function () {
-      dPhoto.style.transition = 'transform 1.9s cubic-bezier(.45,.02,.2,1)';
-      dPhoto.style.transform = 'translate(' + r.x + 'px,' + r.y + 'px) scale(1,1)';
+      dPhoto.style.transition = 'transform var(--t-fly, 900ms) cubic-bezier(.45,.02,.2,1)';
+      placePhoto(dPhoto, r.x, r.y, r.w, r.h, 1, 1);
     });
 
-    window.setTimeout(function () { if (isOpen) detail.classList.add('is-ready'); }, 620);
+    window.setTimeout(function () { if (isOpen) detail.classList.add('is-ready'); }, 420);
+    /* G3: 等飞行落位后再叠全尺寸图 —— 否则上层图会被钉在飞行中的某一帧 */
+    window.setTimeout(function () { if (isOpen && current === i) swapToFull(i); }, 880);
+    dPhoto.focus({ preventScroll: true });
   }
 
-  function swapToFull(i) {    var p = PHOTOS[i];
+  /* G3: 全尺寸图用上层淡入，替掉「糊 → 清」的硬切 */
+  function swapToFull(i) {
+    var p = PHOTOS[i];
+    if (!p || !dTop) return;
     var im = new Image();
+    im.decoding = 'async';
     im.onload = function () {
-      if (current !== i) return;
-      dPhoto.src = p.full;
+      if (current !== i || !isOpen) return;
+      dTop.src = p.full;
+      dTop.style.transition = 'none';
+      dTop.style.width = dPhoto.style.width;
+      dTop.style.height = dPhoto.style.height;
+      dTop.style.transform = dPhoto.style.transform;
+      void dTop.offsetWidth;
+      dTop.style.transition = '';
+      dTop.classList.add('is-ready');
     };
     im.src = p.full;
   }
@@ -1576,11 +1968,13 @@ body.is-about .c-scroll{ opacity: 0; }
     return gridCells[i] || wallCells[i] || null;
   }
 
-  function closeDetail() {
+  function closeDetailRaw() {
     if (!isOpen || closing) return;
     closing = true;
     stepToken++;                      // drop any pending crossfade callback
     wheelAcc = 0;
+    /* 上层是全尺寸图，不参与回飞动画；留着会盖住 flown 的底图，看着像卡住 */
+    hideTop();
 
     var p = PHOTOS[current];
     var cell = cellFor(current);
@@ -1590,7 +1984,7 @@ body.is-about .c-scroll{ opacity: 0; }
     detail.classList.remove('is-ready');
     detail.classList.add('is-closing');
 
-    dPhoto.style.transition = 'transform 1.3s cubic-bezier(.45,.02,.2,1)';
+    dPhoto.style.transition = 'transform var(--t-exit, 700ms) cubic-bezier(.45,.02,.2,1)';
     dPhoto.style.opacity = '1';       // never fly back while mid-fade
 
     if (img) {
@@ -1611,10 +2005,17 @@ body.is-about .c-scroll{ opacity: 0; }
          lets the photo disappear instead of hovering over the page */
       dPhoto.style.opacity = '';
       dPhoto.style.transition = 'none';
+      hideTop();
+      setBackgroundInert(false);
       current = -1;
       isOpen = false;
       closing = false;
-    }, 1460);
+      /* F3: 焦点回到来源那张图 */
+      if (lastFocus && document.contains(lastFocus)) {
+        lastFocus.focus({ preventScroll: true });
+        lastFocus = null;
+      }
+    }, 780);
   }
 
   /* leave the photo without the fly-back — used when navigating away
@@ -1623,6 +2024,7 @@ body.is-about .c-scroll{ opacity: 0; }
     if (!isOpen) return;
     stepToken++;
     closing = true;
+    hideTop();
 
     var finish = function () {
       detail.classList.remove('is-open');
@@ -1630,6 +2032,8 @@ body.is-about .c-scroll{ opacity: 0; }
       dPhoto.classList.remove('is-visible');
       dPhoto.style.opacity = '';
       dPhoto.style.transition = 'none';
+      hideTop();
+      setBackgroundInert(false);
       current = -1;
       isOpen = false;
       closing = false;
@@ -1652,28 +2056,27 @@ body.is-about .c-scroll{ opacity: 0; }
     if (!p) return;
 
     current = p.i;
-    dCat.textContent = p.cat;
-    dCount.textContent = pad2(local + 1) + ' / ' + pad2(sec.items.length);
+    paintMeta(p, local, sec);
     buildRail(sec, local);
+    hideTop();
 
     var token = ++stepToken;
 
-    dPhoto.style.transition = 'opacity .3s var(--ease-soft)';
+    dPhoto.style.transition = 'opacity .26s var(--ease-soft)';
     dPhoto.style.opacity = '0';
 
     window.setTimeout(function () {
       if (token !== stepToken || !isOpen) return;
-      dPhoto.src = p.thumb;
-      dPhoto.alt = p.cat + ' — ' + (local + 1);
+      dPhoto.src = p.view;
+      dPhoto.alt = p.cat + ' · ' + (p.year || '') + ' · 第 ' + (local + 1) + ' 张';
       var r = fitRect(p.ar);
-      dPhoto.style.width = r.w + 'px';
-      dPhoto.style.height = r.h + 'px';
-      dPhoto.style.transform = 'translate(' + r.x + 'px,' + r.y + 'px) scale(1,1)';
-      dPhoto.style.transition = 'opacity .45s var(--ease-soft)';
+      placePhoto(dPhoto, r.x, r.y, r.w, r.h, 1, 1);
+      dPhoto.style.transition = 'opacity .34s var(--ease-soft)';
       swapToFull(p.i);
       void dPhoto.offsetWidth;
       dPhoto.style.opacity = '1';
-    }, 300);
+      if (location.hash !== '#' + photoRoute(p.i)) history.replaceState(null, '', '#' + photoRoute(p.i));
+    }, 260);
   }
 
   function step(dir) {
@@ -1697,13 +2100,83 @@ body.is-about .c-scroll{ opacity: 0; }
     if (img.complete && img.naturalWidth) done();
   }
 
+  /* ----------------------------------------------------------------- route */
+
+  var SLUGS = { '年': 'nian', '西藏': 'xizang', '贵州': 'guizhou', '青海': 'qinghai' };
+  var SLUG_CAT = {};
+  for (var sl in SLUGS) SLUG_CAT[SLUGS[sl]] = sl;
+
+  function catRoute(si) { return '/' + SLUGS[SECTIONS[si].cat]; }
+  function photoRoute(i) {
+    var si = secOf(i);
+    var items = SECTIONS[si].items;
+    var local = 0;
+    for (var k = 0; k < items.length; k++) if (items[k].i === i) local = k;
+    return catRoute(si) + '/' + (local + 1);
+  }
+
+  function readRoute() {
+    var h = (location.hash || '#/').replace(/^#\/?/, '');
+    var seg = h.split('/').filter(Boolean);
+    for (var q = 0; q < seg.length; q++) {
+      try { seg[q] = decodeURIComponent(seg[q]); } catch (e) {}
+    }
+    if (!seg.length) return { v: 'index' };
+    if (seg[0] === 'about') return { v: 'about' };
+    var cat = SLUG_CAT[seg[0]] || seg[0];
+    var si = -1;
+    for (var i = 0; i < SECTIONS.length; i++) if (SECTIONS[i].cat === cat) si = i;
+    if (si < 0) return { v: 'index' };
+    var n = parseInt(seg[1], 10);
+    return { v: 'cat', si: si, n: (n > 0 ? n : 0) };
+  }
+
+  function navTo(h) {
+    var want = '#' + h;
+    if (location.hash === want) { applyRoute(); return; }
+
+    location.hash = want;
+  }
+
+  /* B1: 所有 UI 变化都从这里发生，地址是唯一真相 */
+  function applyRoute() {
+    var r = readRoute();
+    if (r.v === 'index') {
+      closeAboutRaw();
+      dismissDetail();
+      closeCatRaw(true);
+      return;
+    }
+    if (r.v === 'about') {
+      openAboutRaw();
+      return;
+    }
+    closeAboutRaw();
+
+    if (r.n) {
+      /* 单张：不要再顺手把分类页建一遍 —— 照片是浮在「墙面或已在的分类页」上面的。
+         从墙面点开时若先建 15 张图的网格，打开和关闭都会卡一下。 */
+      var item = SECTIONS[r.si].items[r.n - 1];
+      if (item && (!isOpen || current !== item.i)) {
+        if (view === 'cat' && curCat !== r.si) openCatRaw(r.si);
+        openDetailRaw(item.i, cellFor(item.i));
+      }
+      return;
+    }
+
+    openCatRaw(r.si);
+    if (isOpen) closeDetailRaw();
+  }
+
+  window.addEventListener('hashchange', applyRoute);
+
   /* ---------------------------------------------------------------- events */
 
   track.addEventListener('click', function (e) {
     if (isIntro) return;
     var cell = e.target.closest('.cell');
     if (!cell || dragMoved) return;
-    openDetail(Number(cell.dataset.i), cell);
+    navTo(photoRoute(Number(cell.dataset.i)));
   });
 
   track.addEventListener('keydown', function (e) {
@@ -1711,37 +2184,88 @@ body.is-about .c-scroll{ opacity: 0; }
     if (!cell) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      openDetail(Number(cell.dataset.i), cell);
+      navTo(photoRoute(Number(cell.dataset.i)));
     }
   });
 
-  /* the big category name is the door into the category page */
-  catName.addEventListener('click', function (e) {
-    e.preventDefault();
+  /* B3: 分类名现在是真正的按钮 */
+  document.getElementById('catOpen').addEventListener('click', function () {
     if (isIntro) return;
-    openCat(focused);
+    navTo(catRoute(focused));
   });
 
   grid.addEventListener('click', function (e) {
     var cell = e.target.closest('.gcell');
     if (!cell) return;
-    openDetail(Number(cell.dataset.i), cell);
+    navTo(photoRoute(Number(cell.dataset.i)));
   });
 
-  dPhoto.addEventListener('click', closeDetail);
+  /* F1: 分类网格方向键漫游 + Enter / Space 打开 */
+  grid.addEventListener('keydown', function (e) {
+    var cell = e.target.closest('.gcell');
+    if (!cell) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      navTo(photoRoute(Number(cell.dataset.i)));
+      return;
+    }
+    /* 网格是「按列」追加的：一列 5 个，所以上下 ±1、左右 ±5 */
+    var stepMap = { ArrowDown: 1, ArrowUp: -1, ArrowRight: 5, ArrowLeft: -5 };
+    var d = stepMap[e.key];
+    if (!d) return;
+    var all = Array.prototype.slice.call(grid.querySelectorAll('.gcell'));
+    var idx = all.indexOf(cell);
+    var next = all[idx + d];
+    if (!next) return;
+    e.preventDefault();
+    cell.setAttribute('tabindex', '-1');
+    next.setAttribute('tabindex', '0');
+    next.focus();
+  });
+
+  /* 墙面同样用方向键漫游 */
+  track.addEventListener('keydown', function (e) {
+    var cell = e.target.closest('.cell');
+    if (!cell) return;
+    var stepMap = { ArrowRight: 5, ArrowLeft: -5, ArrowDown: 1, ArrowUp: -1 };
+    var d = stepMap[e.key];
+    if (!d) return;
+    var all = Array.prototype.slice.call(track.querySelectorAll('.cell'));
+    var idx = all.indexOf(cell);
+    var next = all[idx + d];
+    if (!next) return;
+    e.preventDefault();
+    cell.setAttribute('tabindex', '-1');
+    next.setAttribute('tabindex', '0');
+    next.focus();
+    next.scrollIntoView({ block: 'nearest', inline: 'center' });
+  });
+
+  dPhoto.addEventListener('click', function () { back(); });
+
+  /* B1: 关闭 = 地址回退一层，和浏览器返回键一致 */
+  function back() {
+    if (about.classList.contains('is-open')) { navTo(''); return; }
+    if (isOpen) {
+      /* 墙面来的：直接换回首页，避免顺手把分类页也渲染一遍（那一下很重） */
+      if (detailFromWall) {
+        if (location.hash) location.replace('#');
+        else applyRoute();
+      } else {
+        history.back();
+      }
+      return;
+    }
+    if (view === 'cat') { navTo(''); return; }
+    navTo('');
+  }
 
   document.getElementById('navClose').addEventListener('click', function (e) {
     e.preventDefault();
-    if (isOpen) closeDetail();
-    else if (about.classList.contains('is-open')) closeAbout();
-    else closeCat();
+    back();
   });
 
-  function goHome() {
-    closeAbout();
-    if (isOpen) dismissDetail();
-    closeCat(true);
-  }
+  function goHome() { navTo(''); }
 
   document.getElementById('navWork').addEventListener('click', function (e) {
     e.preventDefault();
@@ -1755,23 +2279,55 @@ body.is-about .c-scroll{ opacity: 0; }
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
-      if (about.classList.contains('is-open')) closeAbout();
-      else if (isOpen) closeDetail();
-      else closeCat();
+      if (isIntro) return;
+      back();
+      return;
     }
     if (!isOpen) return;
     if (e.key === 'ArrowRight') step(1);
     if (e.key === 'ArrowLeft') step(-1);
   });
 
-  /* preload the large file on hover */
-  var preloaded = {};
+  /* G1: 移动端详情翻页 —— 左右滑动 + 底部控件 */
+  document.getElementById('dPrev').addEventListener('click', function () { step(-1); });
+  document.getElementById('dNext').addEventListener('click', function () { step(1); });
+
+  var tStartX = 0, tStartY = 0, tTracking = false;
+  detail.addEventListener('touchstart', function (e) {
+    if (!isOpen || e.touches.length !== 1) return;
+    tStartX = e.touches[0].clientX;
+    tStartY = e.touches[0].clientY;
+    tTracking = true;
+  }, { passive: true });
+
+  detail.addEventListener('touchend', function (e) {
+    if (!tTracking) return;
+    tTracking = false;
+    var t = e.changedTouches[0];
+    var dx = t.clientX - tStartX;
+    var dy = t.clientY - tStartY;
+    if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      step(dx < 0 ? 1 : -1);
+    } else if (dy > 110 && Math.abs(dy) > Math.abs(dx) * 1.4) {
+      back();
+    }
+  }, { passive: true });
+
+  /* E5: 停留 120ms 才预取，且只留一张 —— 扫过整面墙不再拉 20MB */
+  var preloadTimer = 0, preloadSlot = '';
   function preloadFull(el) {
     var p = PHOTOS[Number(el.dataset.i)];
-    if (!p || preloaded[p.key]) return;
-    preloaded[p.key] = true;
-    var im = new Image();
-    im.src = p.full;
+    if (!p) return;
+    var c = navigator.connection;
+    if (c && (c.saveData || /2g/.test(c.effectiveType || ''))) return;
+    window.clearTimeout(preloadTimer);
+    preloadTimer = window.setTimeout(function () {
+      if (preloadSlot === p.key) return;
+      preloadSlot = p.key;
+      var im = new Image();
+      im.decoding = 'async';
+      im.src = p.view;
+    }, 120);
   }
   track.addEventListener('mouseover', function (e) {
     var cell = e.target.closest('.cell');
@@ -1784,19 +2340,19 @@ body.is-about .c-scroll{ opacity: 0; }
 
   /* ----------------------------------------------------------------- about */
 
-  function openAbout() {
+  function openAboutRaw() {
     about.classList.add('is-open');
     about.setAttribute('aria-hidden', 'false');
     document.body.classList.add('is-about');
   }
-  function closeAbout() {
+  function closeAboutRaw() {
     about.classList.remove('is-open');
     about.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('is-about');
   }
 
-  document.getElementById('navAbout').addEventListener('click', function (e) { e.preventDefault(); openAbout(); });
-  document.getElementById('aboutClose').addEventListener('click', closeAbout);
+  document.getElementById('navAbout').addEventListener('click', function (e) { e.preventDefault(); navTo('/about'); });
+  document.getElementById('aboutClose').addEventListener('click', function () { navTo(''); });
 
   /* ------------------------------------------------------------------ mode */
 
@@ -1816,16 +2372,16 @@ body.is-about .c-scroll{ opacity: 0; }
   }
 
   modeGrid.addEventListener('click', function () {
-    if (view === 'cat') closeCat();
+    if (view === 'cat') navTo('');
     else if (!isMobile() && W) target = Math.round(pos / W) * W;
   });
 
   modeFull.addEventListener('click', function () {
     if (view === 'cat') {
       var i = centerPhoto();
-      if (i >= 0) openDetail(i, gridCells[i]);
+      if (i >= 0) navTo(photoRoute(i));
     } else {
-      openCat(focused);
+      navTo(catRoute(focused));
     }
   });
 
@@ -1834,7 +2390,7 @@ body.is-about .c-scroll{ opacity: 0; }
   buildIndex();
   measure();
   setCat(0, true);
-  catAll.textContent = '/' + PHOTOS.length + ' Photos';
+  catAll.textContent = '全站 ' + PHOTOS.length + ' 张';
 
   requestAnimationFrame(function () { lastT = performance.now(); });
   requestAnimationFrame(frame);
@@ -1911,7 +2467,7 @@ body.is-about .c-scroll{ opacity: 0; }
     isIntro = false;
     document.body.classList.remove('is-intro');
     intro.classList.add('is-out');
-    window.setTimeout(function () { intro.style.display = 'none'; }, 800);
+    window.setTimeout(function () { intro.style.display = 'none'; }, 700);
   }
 
   var introTimers = [];
@@ -1922,22 +2478,40 @@ body.is-about .c-scroll{ opacity: 0; }
     intro.classList.add('is-rolling');
   }
 
+  function skipIntro() {
+    if (!isIntro || intro.classList.contains('is-out')) return;
+    introTimers.forEach(window.clearTimeout);
+    intro.classList.add('is-zoom', 'is-out');
+    settleWall();
+    hydrateDeferred();
+    window.setTimeout(endIntro, 700);
+  }
+
   function runIntro() {
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var seen = false;
+    var deep = readRoute().v !== 'index';
+    try { seen = sessionStorage.getItem('ae:intro') === '1'; } catch (e) {}
 
     /* the wall waits below the fold, slightly turned and out of focus */
     W && (pos = target = W * 0.55);
     tilt.style.transform = 'translate3d(-4vw, 16vh, 0) rotate(-4deg) scale(1.05)';
     tilt.style.filter = 'blur(7px)';
 
-    if (reduced) {
+    /* A1: 同一会话看过一次、系统要求减弱动效、或直接深链进来，都不再放开场 */
+    if (reduced || seen || deep) {
       tilt.style.transition = 'none';
       tilt.style.transform = 'none';
       tilt.style.filter = 'none';
       revealWall();
+      hydrateDeferred();
       intro.style.display = 'none';
+      isIntro = false;
+      document.body.classList.remove('is-intro');
       return;
     }
+
+    try { sessionStorage.setItem('ae:intro', '1'); } catch (e) {}
 
     isIntro = true;
     document.body.classList.add('is-intro');
@@ -1946,6 +2520,7 @@ body.is-about .c-scroll{ opacity: 0; }
 
     /* two full passes of the letter roll, then the cover leaves upward */
     startRoll();
+    introTimers.push(window.setTimeout(function () { intro.classList.add('is-armed'); }, 1000));
     introTimers.push(window.setTimeout(startRoll, ROLL_CYCLE + 90));
     introTimers.push(window.setTimeout(function () {
       intro.classList.add('is-zoom');
@@ -1953,22 +2528,24 @@ body.is-about .c-scroll{ opacity: 0; }
     introTimers.push(window.setTimeout(function () {
       intro.classList.add('is-out');
       settleWall();
+      hydrateDeferred();
     }, ROLL_CYCLE * 2 + 300));
     introTimers.push(window.setTimeout(endIntro, ROLL_CYCLE * 2 + 1750));
 
-    /* impatient visitors can cut the wait short */
-    intro.addEventListener('click', function () {
-      if (!isIntro || intro.classList.contains('is-out')) return;
-      introTimers.forEach(window.clearTimeout);
-      intro.classList.add('is-zoom');
-      intro.classList.add('is-out');
-      settleWall();
-      window.setTimeout(endIntro, 850);
+    /* A1: 三条明确的跳过路径：点遮罩、点按钮、Esc / Enter */
+    intro.addEventListener('click', skipIntro);
+    document.getElementById('introSkip').addEventListener('click', function (e) {
+      e.stopPropagation();
+      skipIntro();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (isIntro && (e.key === 'Escape' || e.key === 'Enter')) skipIntro();
     });
   }
 
   buildMark();
   runIntro();
+  applyRoute();
 
   var resizeTimer = 0;
   window.addEventListener('resize', function () {

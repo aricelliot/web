@@ -4,6 +4,9 @@
 # WorkBuddy 项目配置
 .workbuddy/
 
+# EdgeOne 本地部署链接信息
+.edgeone/
+
 # 系统文件
 .DS_Store
 Thumbs.db

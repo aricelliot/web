@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aricelliot.github.io/web/sitemap.xml
